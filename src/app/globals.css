@@ -1,6 +1,26 @@
 @import "tailwindcss";
 
 @theme {
+
+   --animate-rotate-rays: rotate-rays 20s linear infinite;
+   --animate-pulse-ray-even: pulse-ray-even 2s ease-in-out infinite;
+   --animate-pulse-ray-odd: pulse-ray-odd 2s ease-in-out infinite;
+
+  @keyframes rotate-rays {
+          from { transform: rotate(0deg) }
+          to { transform: rotate(360deg) }
+        }
+
+  @keyframes pulse-ray-even {
+          '0%, 100%': { transform: scaleX(1); opacity: 1 }
+          '50%': { transform: scaleX(10); opacity: 0.8 }
+        }
+
+  @keyframes pulse-ray-odd {
+          '0%, 100%': { transform: scaleX(1.5); opacity: 0.8 }
+          '50%': { transform: scaleX(10); opacity: 1 }
+        }
+
   /* Color palette for your watch-together app */
   --color-primary: #3B82F6;
   --color-primary-dark: #2563EB;

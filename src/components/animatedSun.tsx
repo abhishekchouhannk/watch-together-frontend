@@ -1,58 +1,74 @@
-import React from 'react';
+// components/AnimatedSun.jsx
+'use client';
 
-const AnimatedSun = ({ size = 80, spokeCount = 8 }) => {
-  const sunRadius = size / 2;
-  const spokeLength = size * 0.25;
-  const spokeWidth = size * 0.05;
-  const spokeOffset = sunRadius * 1.3; // Gap between sun and spokes
+import { useEffect, useState } from 'react';
+
+export default function AnimatedSun() {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    // Trigger the drop-down animation after 2 seconds
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Generate 12 rays around the sun
+  const rays = Array.from({ length: 12 }, (_, i) => i);
 
   return (
-    <div className="flex items-center justify-center p-8 ">
-      <div 
-        className="relative"
-        style={{ width: size, height: size, zIndex: 20 }}
-      >
-        {/* Central Sun Circle */}
-        <div 
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-yellow-400"
-          style={{ 
-            width: sunRadius * 2, 
-            height: sunRadius * 2,
-            boxShadow: '0 0 20px rgba(251, 191, 36, 0.5)'
-          }}
-        />
-
-        {/* Rotating Spokes Container */}
-        <div className="absolute inset-0 animate-spin-slow">
-          {[...Array(spokeCount)].map((_, index) => {
-            const angle = (360 / spokeCount) * index;
-            
-            return (
+    <div
+      className={`fixed top-0 left-2/9 -translate-x-1/2 transition-transform duration-[1500ms] ease-out ${
+        isVisible ? 'translate-y-[15vh]' : '-translate-y-full'
+      }`}
+      style={{ zIndex: 10 }}
+    >
+      <div className="relative w-32 h-32">
+        {/* Rotating rays container */}
+        <div className="absolute inset-0 animate-rotate-rays">
+          {rays.map((index) => (
+            <div
+              key={index}
+              className="absolute w-full h-full"
+              style={{
+                transform: `rotate(${index * 30}deg)`,
+              }}
+            >
+              {/* Ray positioned from center */}
               <div
-                key={index}
-                className="absolute top-1/2 left-1/2 origin-left"
+                className={`absolute top-1/2 left-1/2 -translate-y-1/2 w-8 h-1 bg-yellow-500 ${
+                  index % 2 === 0 ? 'animate-pulse-ray-even' : 'animate-pulse-ray-odd'
+                }`}
                 style={{
-                  transform: `rotate(${angle}deg) translateX(${spokeOffset}px)`,
-                  transformOrigin: 'left center',
+                  transformOrigin: '0 50%',
+                  marginLeft: '48px', // Distance from center (adjust as needed)
                 }}
-              >
-                {/* Individual Spoke */}
-                <div
-                  className="bg-yellow-400 rounded-full animate-pulse-grow"
-                  style={{
-                    width: spokeLength,
-                    height: spokeWidth,
-                    animationDelay: `${index * 0.1}s`,
-                  }}
-                />
-              </div>
-            );
-          })}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Sun core */}
+        <div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-yellow-400 rounded-full pixelated-border shadow-lg shadow-yellow-300/50 z-10"
+          style={{ animation: 'pulse 0.4s ease-in-out infinite'
+          }}
+        >
+          {/* Inner glow effect */}
+          <div className="absolute inset-2 bg-yellow-200 rounded-full opacity-60" />
         </div>
       </div>
 
       <style jsx>{`
-        @keyframes spin-slow {
+        .pixelated-border {
+          box-shadow: 
+            0 0 0 1px rgba(0, 0, 0, 0.1),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+        }
+
+        @keyframes rotate-rays {
           from {
             transform: rotate(0deg);
           }
@@ -61,27 +77,40 @@ const AnimatedSun = ({ size = 80, spokeCount = 8 }) => {
           }
         }
 
-        @keyframes pulse-grow {
+        @keyframes pulse-ray-even {
           0%, 100% {
-            transform: scaleX(1);
+            transform: translateY(-50%) scaleX(1);
             opacity: 1;
           }
           50% {
-            transform: scaleX(1.4);
+            transform: translateY(-50%) scaleX(1.5);
             opacity: 0.8;
           }
         }
 
-        .animate-spin-slow {
-          animation: spin-slow 8s linear infinite;
+        @keyframes pulse-ray-odd {
+          0%, 100% {
+            transform: translateY(-50%) scaleX(1.5);
+            opacity: 0.8;
+          }
+          50% {
+            transform: translateY(-50%) scaleX(1);
+            opacity: 1;
+          }
         }
 
-        .animate-pulse-grow {
-          animation: pulse-grow 2s ease-in-out infinite;
+        .animate-rotate-rays {
+          animation: rotate-rays 20s linear infinite;
+        }
+
+        .animate-pulse-ray-even {
+          animation: pulse-ray-even 2s ease-in-out infinite;
+        }
+
+        .animate-pulse-ray-odd {
+          animation: pulse-ray-odd 2s ease-in-out infinite;
         }
       `}</style>
     </div>
   );
-};
-
-export default AnimatedSun;
+}
