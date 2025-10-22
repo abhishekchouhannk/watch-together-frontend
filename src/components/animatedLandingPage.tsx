@@ -1,93 +1,64 @@
+'use client';
 import React, { useEffect, useState } from 'react';
+import AnimatedSun from './animatedSun';
 
 interface CloudLayerProps {
   src: string;
-  splitPoint: number; // Percentage where to split (e.g., 20 means split at 20%)
+  side: 'left' | 'right';
   delay: number;
   animationStarted: boolean;
   zIndex: number;
 }
 
-const CloudLayerSplit: React.FC<CloudLayerProps> = ({ 
+const CloudLayer: React.FC<CloudLayerProps> = ({ 
   src, 
-  splitPoint, 
+  side, 
   delay, 
   animationStarted, 
-  zIndex
+  zIndex 
 }) => {
-  // Use the same duration for both parts to ensure simultaneous arrival
-  const animationDuration = 2000;
-  
-  // Calculate different speeds (distance/time) by adjusting easing
-  const leftEasing = `cubic-bezier(0.4, 0, ${0.2 + (splitPoint / 100) * 0.3}, 1)`;
-  const rightEasing = `cubic-bezier(0.4, 0, ${0.2 + ((100 - splitPoint) / 100) * 0.3}, 1)`;
-  
-  return (
-    <>
-      {/* Left part */}
-      <div 
-        className="absolute top-0 left-0 h-full overflow-hidden"
-        style={{ 
-          width: `${splitPoint}%`,
-          zIndex,
-          transition: `transform ${animationDuration}ms ${leftEasing} ${delay}ms`,
-          transform: animationStarted ? 'translateX(0)' : 'translateX(-100%)'
-        }}
-      >
-        <img
-          src={src}
-          alt="Clouds left"
-          className="h-full object-cover absolute left-0"
-          style={{ 
-            width: `${(100 / splitPoint) * 100}%`,
-            maxWidth: 'none'
-          }}
-        />
-      </div>
+  const isLeft = side === 'left';
 
-      {/* Right part */}
-      <div 
-        className="absolute top-0 right-0 h-full overflow-hidden"
-        style={{ 
-          width: `${100 - splitPoint}%`,
-          zIndex,
-          transition: `transform ${animationDuration}ms ${rightEasing} ${delay}ms`,
-          transform: animationStarted ? 'translateX(0)' : 'translateX(100%)'
-        }}
-      >
-        <img
-          src={src}
-          alt="Clouds right"
-          className="h-full object-cover absolute right-0"
-          style={{ 
-            width: `${(100 / (100 - splitPoint)) * 100}%`,
-            maxWidth: 'none',
-            right: '0'
-          }}
-        />
-      </div>
-    </>
+  return (
+    <div
+      className={`absolute top-0 h-full transition-transform ease-out`}
+      style={{
+        zIndex,
+        [isLeft ? 'left' : 'right']: 0,
+        transitionDuration: '2500ms',
+        transitionDelay: `${delay}ms`,
+        transform: animationStarted
+          ? 'translateX(0)'
+          : `translateX(${isLeft ? '-100%' : '100%'})`,
+      }}
+    >
+      <img
+        src={src}
+        alt={`Clouds ${side}`}
+        className="w-full h-full object-cover"
+      />
+    </div>
   );
 };
 
-const AnimatedLandingPageEnhanced: React.FC = () => {
+const AnimatedLandingPage: React.FC = () => {
   const [animationStarted, setAnimationStarted] = useState(false);
-  const [blimpTrail, setBlimpTrail] = useState<Array<{x: number, y: number}>>([]);
+  const [blimpTrail, setBlimpTrail] = useState<Array<{ x: number; y: number }>>([]);
 
   useEffect(() => {
-    setAnimationStarted(true);
+    setTimeout(() => setAnimationStarted(true), 200);
 
     let progress = 0;
-    const trail: Array<{x: number, y: number}> = [];
-    
+    const trail: Array<{ x: number; y: number }> = [];
+
     const blimpAnimation = setInterval(() => {
       if (progress <= 100) {
-        const x = 10 + progress * 0.7; // Start at 10%, end at 80%
-        const y = 40 + Math.sin(progress * 0.05) * 15 - (progress * 0.2);
-        
+        const x = 10 + progress * 0.7; // Start 10%, end 80%
+        const y = 40 + Math.sin(progress * 0.05) * 15 - progress * 0.2;
+
         trail.push({ x, y });
-        if (trail.length > 30) trail.shift(); // Limit trail length
-        
+        if (trail.length > 30) trail.shift();
+
         setBlimpTrail([...trail]);
         progress += 0.5;
       } else {
@@ -99,56 +70,69 @@ const AnimatedLandingPageEnhanced: React.FC = () => {
   }, []);
 
   return (
-    <div className="relative w-full h-screen overflow-hidden">
-      {/* Layer 1: Sky Background - Fade in */}
-      <div 
-        className={`absolute inset-0 transition-all duration-2000 ${
+    <div className="relative w-full h-screen overflow-hidden bg-sky-300">
+      {/* Layer 1: Sky Background */}
+      <div
+        className={`absolute inset-0 transition-all duration-[1000ms] ${
           animationStarted ? 'opacity-100' : 'opacity-0'
         }`}
         style={{ zIndex: 10 }}
       >
-        <div className="w-full h-full bg-gradient-to-b from-sky-300 to-sky-400">
-          <img
-            src="/assets/Clouds 1/1.png"
-            alt="Sky"
-            className="w-full h-full object-cover mix-blend-multiply"
-          />
-        </div>
+        <img
+          src="/assets/Clouds 1/1.png"
+          alt="Sky"
+          className="w-full h-full object-cover"
+        />
       </div>
 
-      {/* Layer 2: Far-off Clouds - Adjust splitPoint based on your image */}
-      <CloudLayerSplit 
-        src="/assets/Clouds 1/2.png"
-        splitPoint={38}
+      {/* Layer 2: Far Clouds */}
+      <CloudLayer
+        src="/assets/Clouds 1/2L.png"
+        side="left"
+        delay={500}
+        animationStarted={animationStarted}
+        zIndex={20}
+      />
+      <CloudLayer
+        src="/assets/Clouds 1/2R.png"
+        side="right"
         delay={500}
         animationStarted={animationStarted}
         zIndex={20}
       />
 
       {/* Layer 3: Near Clouds */}
-      <CloudLayerSplit 
-        src="/assets/Clouds 1/4.png"
+      <CloudLayer
+        src="/assets/Clouds 1/4L.png"
+        side="left"
         delay={1000}
         animationStarted={animationStarted}
         zIndex={30}
-        splitPoint={24}
+      />
+      <CloudLayer
+        src="/assets/Clouds 1/4R.png"
+        side="right"
+        delay={1000}
+        animationStarted={animationStarted}
+        zIndex={30}
       />
 
-      {/* Layer 4: Animated Blimp with Trail */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 40 }}>
-        {/* Smoke trail with gradient opacity */}
+      {/* Layer 4: Animated Blimp */}
+      <svg
+        className="absolute inset-0 w-full h-full pointer-events-none"
+        style={{ zIndex: 40 }}
+      >
         {blimpTrail.map((point, i) => (
           <circle
             key={i}
             cx={`${point.x}%`}
             cy={`${point.y}%`}
-            r={2 + (i * 0.1)}
+            r={2 + i * 0.1}
             fill="white"
             opacity={0.1 + (i / blimpTrail.length) * 0.2}
           />
         ))}
-        
-        {/* Blimp (last position in trail) */}
+
         {blimpTrail.length > 0 && (
           <g>
             <ellipse
@@ -159,7 +143,6 @@ const AnimatedLandingPageEnhanced: React.FC = () => {
               fill="#FFA500"
               opacity="0.9"
             />
-            {/* Small gondola */}
             <rect
               x={`${blimpTrail[blimpTrail.length - 1].x - 0.5}%`}
               y={`${blimpTrail[blimpTrail.length - 1].y + 0.5}%`}
@@ -171,13 +154,19 @@ const AnimatedLandingPageEnhanced: React.FC = () => {
         )}
       </svg>
 
+      {/* Layer 5: Sun */}
+      <AnimatedSun />
+
       {/* UI Content */}
-      <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 50 }}>
-        <div 
+      <div
+        className="absolute inset-0 flex items-center justify-center"
+        style={{ zIndex: 50 }}
+      >
+        <div
           className={`text-center px-6 transition-all duration-1000 transform ${
             animationStarted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}
-          style={{ transitionDelay: '3500ms' }}
+          style={{ transitionDelay: '3000ms' }}
         >
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 drop-shadow-2xl">
             Watch Together
@@ -199,4 +188,4 @@ const AnimatedLandingPageEnhanced: React.FC = () => {
   );
 };
 
-export default AnimatedLandingPageEnhanced;
+export default AnimatedLandingPage;
