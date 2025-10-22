@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 
 export default function AnimatedSun() {
   const [isVisible, setIsVisible] = useState(false);
+  const [showRays, setShowRays] = useState(false);
 
   useEffect(() => {
     // Trigger the drop-down animation after 2 seconds
@@ -12,60 +13,91 @@ export default function AnimatedSun() {
       setIsVisible(true);
     }, 2000);
 
-    return () => clearTimeout(timer);
+    // Fade in rays after sun is in position (2s delay + 1.5s animation)
+    const raysTimer = setTimeout(() => {
+      setShowRays(true);
+    }, 3500);
+
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(raysTimer);
+    };
   }, []);
 
   // Generate 12 rays around the sun
   const rays = Array.from({ length: 12 }, (_, i) => i);
 
   return (
-    <div
-      className={`fixed top-0 left-2/9 -translate-x-1/2 transition-transform duration-[1500ms] ease-out ${
-        isVisible ? 'translate-y-[15vh]' : '-translate-y-full'
-      }`}
-      style={{ zIndex: 10 }}
-    >
-      <div className="relative w-32 h-32">
-        {/* Rotating rays container */}
-        <div className="absolute inset-0 animate-rotate-rays">
-          {rays.map((index) => (
-            <div
-              key={index}
-              className="absolute w-full h-full"
-              style={{
-                transform: `rotate(${index * 30}deg)`,
-              }}
-            >
-              {/* Ray positioned from center */}
+    <div className="fixed top-0 left-0 w-full pointer-events-none" style={{ zIndex: 50 }}>
+      <div
+        className={`absolute left-2/9 -translate-x-1/2 transition-transform duration-[1500ms] ease-out ${
+          isVisible ? 'translate-y-[15vh]' : '-translate-y-[200px]'
+        }`}
+        style={{ top: 0 }}
+      >
+        <div className="relative w-32 h-32">
+          {/* Rotating rays container */}
+          <div 
+            className={`absolute inset-0 animate-rotate-rays transition-opacity duration-700 ${
+              showRays ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            {rays.map((index) => (
               <div
-                className={`absolute top-1/2 left-1/2 -translate-y-1/2 w-8 h-1 bg-yellow-500 ${
-                  index % 2 === 0 ? 'animate-pulse-ray-even' : 'animate-pulse-ray-odd'
-                }`}
+                key={index}
+                className="absolute w-full h-full"
                 style={{
-                  transformOrigin: '0 50%',
-                  marginLeft: '48px', // Distance from center (adjust as needed)
+                  transform: `rotate(${index * 30}deg)`,
                 }}
-              />
-            </div>
-          ))}
-        </div>
+              >
+                {/* Ray positioned from center */}
+                <div
+                  className={`absolute top-1/2 left-47/80 -translate-y-1/2 w-8 h-1 bg-yellow-300 ray-pixelated ${
+                    index % 2 === 0 ? 'animate-pulse-ray-even' : 'animate-pulse-ray-odd'
+                  }`}
+                  style={{
+                    transformOrigin: '0 50%',
+                    marginLeft: '48px',
+                  }}
+                />
+              </div>
+            ))}
+          </div>
 
-        {/* Sun core */}
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-yellow-400 rounded-full pixelated-border shadow-lg shadow-yellow-300/50 z-10"
-          style={{ animation: 'pulse 0.4s ease-in-out infinite'
-          }}
-        >
-          {/* Inner glow effect */}
-          <div className="absolute inset-2 bg-yellow-200 rounded-full opacity-60" />
+          {/* Sun core */}
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-yellow-400 rounded-full shadow-lg shadow-yellow-300/50 z-10 sun-pixelated"
+          >
+            {/* Inner glow effect */}
+            <div className="absolute inset-2 bg-yellow-200 rounded-full opacity-60" />
+          </div>
         </div>
       </div>
 
       <style jsx>{`
-        .pixelated-border {
+        /* Pixelated sun border effect */
+        .sun-pixelated {
           box-shadow: 
-            0 0 0 1px rgba(0, 0, 0, 0.1),
-            inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+            /* Main pixelated border */
+            -2px -2px 0 0 #fbbf24,
+            2px -2px 0 0 #fbbf24,
+            -2px 2px 0 0 #fbbf24,
+            2px 2px 0 0 #fbbf24,
+            -3px 0 0 0 #fbbf24,
+            3px 0 0 0 #fbbf24,
+            0 -3px 0 0 #fbbf24,
+            0 3px 0 0 #fbbf24,
+            /* Outer glow */
+            0 0 20px rgba(251, 191, 36, 0.5);
+        }
+
+        /* Pixelated ray border effect */
+        .ray-pixelated {
+          box-shadow: 
+            0 -2px 0 0 #fcd34d,
+            0 2px 0 0 #fcd34d,
+            -2px 0 0 0 #fcd34d,
+            2px 0 0 0 #fcd34d;
         }
 
         @keyframes rotate-rays {
