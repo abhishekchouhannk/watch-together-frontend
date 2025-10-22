@@ -2,47 +2,71 @@ import React, { useEffect, useState } from 'react';
 
 interface CloudLayerProps {
   src: string;
-  side: 'left' | 'right';
+  splitPoint: number; // Percentage where to split (e.g., 20 means split at 20%)
   delay: number;
   animationStarted: boolean;
   zIndex: number;
-  splitPoint?: number; // Percentage where to split the image
 }
 
-const CloudLayer: React.FC<CloudLayerProps> = ({ 
+const CloudLayerSplit: React.FC<CloudLayerProps> = ({ 
   src, 
-  side, 
+  splitPoint, 
   delay, 
   animationStarted, 
-  zIndex,
-  splitPoint = 50 
+  zIndex
 }) => {
-  const isLeft = side === 'left';
+  // Use the same duration for both parts to ensure simultaneous arrival
+  const animationDuration = 2000;
+  
+  // Calculate different speeds (distance/time) by adjusting easing
+  const leftEasing = `cubic-bezier(0.4, 0, ${0.2 + (splitPoint / 100) * 0.3}, 1)`;
+  const rightEasing = `cubic-bezier(0.4, 0, ${0.2 + ((100 - splitPoint) / 100) * 0.3}, 1)`;
   
   return (
-    <div 
-      className={`absolute top-0 ${isLeft ? 'left-0' : 'right-0'} h-full transition-transform ease-out`}
-      style={{ 
-        width: `${splitPoint}%`,
-        zIndex,
-        transitionDuration: `${3000 + delay}ms`,
-        transitionDelay: `${delay}ms`,
-        transform: animationStarted 
-          ? 'translateX(0)' 
-          : `translateX(${isLeft ? '-100%' : '100%'})`
-      }}
-    >
-      <img
-        src={src}
-        alt={`Clouds ${side}`}
-        className="h-full object-cover"
+    <>
+      {/* Left part */}
+      <div 
+        className="absolute top-0 left-0 h-full overflow-hidden"
         style={{ 
-          width: `${10000 / splitPoint}%`,
-          [isLeft ? 'left' : 'right']: '0',
-          position: 'absolute'
+          width: `${splitPoint}%`,
+          zIndex,
+          transition: `transform ${animationDuration}ms ${leftEasing} ${delay}ms`,
+          transform: animationStarted ? 'translateX(0)' : 'translateX(-100%)'
         }}
-      />
-    </div>
+      >
+        <img
+          src={src}
+          alt="Clouds left"
+          className="h-full object-cover absolute left-0"
+          style={{ 
+            width: `${(100 / splitPoint) * 100}%`,
+            maxWidth: 'none'
+          }}
+        />
+      </div>
+
+      {/* Right part */}
+      <div 
+        className="absolute top-0 right-0 h-full overflow-hidden"
+        style={{ 
+          width: `${100 - splitPoint}%`,
+          zIndex,
+          transition: `transform ${animationDuration}ms ${rightEasing} ${delay}ms`,
+          transform: animationStarted ? 'translateX(0)' : 'translateX(100%)'
+        }}
+      >
+        <img
+          src={src}
+          alt="Clouds right"
+          className="h-full object-cover absolute right-0"
+          style={{ 
+            width: `${(100 / (100 - splitPoint)) * 100}%`,
+            maxWidth: 'none',
+            right: '0'
+          }}
+        />
+      </div>
+    </>
   );
 };
 
@@ -93,39 +117,21 @@ const AnimatedLandingPageEnhanced: React.FC = () => {
       </div>
 
       {/* Layer 2: Far-off Clouds - Adjust splitPoint based on your image */}
-      <CloudLayer 
+      <CloudLayerSplit 
         src="/assets/Clouds 1/2.png"
-        side="left"
+        splitPoint={38}
         delay={500}
         animationStarted={animationStarted}
         zIndex={20}
-        splitPoint={55} // Adjust this to avoid cutting clouds
-      />
-      <CloudLayer 
-        src="/assets/Clouds 1/2.png"
-        side="right"
-        delay={500}
-        animationStarted={animationStarted}
-        zIndex={20}
-        splitPoint={45} // This will be 100% - 45% = 55% from right
       />
 
       {/* Layer 3: Near Clouds */}
-      <CloudLayer 
+      <CloudLayerSplit 
         src="/assets/Clouds 1/4.png"
-        side="left"
         delay={1000}
         animationStarted={animationStarted}
         zIndex={30}
-        splitPoint={52}
-      />
-      <CloudLayer 
-        src="/assets/Clouds 1/4.png"
-        side="right"
-        delay={1000}
-        animationStarted={animationStarted}
-        zIndex={30}
-        splitPoint={48}
+        splitPoint={24}
       />
 
       {/* Layer 4: Animated Blimp with Trail */}
