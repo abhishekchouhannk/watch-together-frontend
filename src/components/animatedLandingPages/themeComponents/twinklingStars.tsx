@@ -1,13 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 
-interface TwinklingStarsProps {
-  zIndex?: number;
-  starCount?: number;
-  animationStarted?: boolean;
-  showShootingStars?: boolean;
-  density?: "sparse" | "normal" | "dense";
-}
-
 interface Star {
   x: number;
   y: number;
