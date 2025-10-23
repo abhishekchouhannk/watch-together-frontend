@@ -8,6 +8,8 @@ interface CloudLayerProps {
   delay: number;
   animationStarted: boolean;
   zIndex: number;
+  fullSrc: string;
+  animationSpeed?: number;
 }
 
 const CloudLayer: React.FC<CloudLayerProps> = ({
@@ -16,27 +18,79 @@ const CloudLayer: React.FC<CloudLayerProps> = ({
   delay,
   animationStarted,
   zIndex,
+  fullSrc,
+  animationSpeed = 60, // seconds for one full loop
 }) => {
   const isLeft = side === "left";
+  const [showFullImage, setShowFullImage] = useState(false);
 
+  useEffect(() => {
+    if (animationStarted && fullSrc) {
+      // Switch to full image after initial animation completes
+      const timer = setTimeout(() => {
+        setShowFullImage(true);
+      }, delay + 2500); // delay + transitionDuration
+      
+      return () => clearTimeout(timer);
+    }
+  }, [animationStarted, delay, fullSrc]);
+
+  // Show split clouds during initial animation
+  if (!showFullImage) {
+    return (
+      <div
+        className={`absolute top-0 h-full transition-transform ease-out`}
+        style={{
+          zIndex,
+          [isLeft ? "left" : "right"]: 0,
+          transitionDuration: "2500ms",
+          transitionDelay: `${delay}ms`,
+          transform: animationStarted
+            ? "translateX(0)"
+            : `translateX(${isLeft ? "-100%" : "100%"})`,
+        }}
+      >
+        <img
+          src={src}
+          alt={`Clouds ${side}`}
+          className="w-full h-full object-cover"
+        />
+      </div>
+    );
+  }
+
+  // Show scrolling full cloud layer
   return (
     <div
-      className={`absolute top-0 h-full transition-transform ease-out`}
+      className="absolute top-0 h-full overflow-hidden"
       style={{
         zIndex,
-        [isLeft ? "left" : "right"]: 0,
-        transitionDuration: "2500ms",
-        transitionDelay: `${delay}ms`,
-        transform: animationStarted
-          ? "translateX(0)"
-          : `translateX(${isLeft ? "-100%" : "100%"})`,
+        left: 0,
+        right: 0,
       }}
     >
-      <img
-        src={src}
-        alt={`Clouds ${side}`}
-        className="w-full h-full object-cover"
-      />
+      <div
+        className="absolute top-0 h-full animate-cloud-scroll"
+        style={{
+          width: "200%",
+          animationDuration: `${animationSpeed}s`,
+        }}
+      >
+        {/* First instance */}
+        <img
+          src={fullSrc}
+          alt="Clouds"
+          className="absolute top-0 left-0 h-full object-cover"
+          style={{ width: "50%" }}
+        />
+        {/* Second instance for seamless loop */}
+        <img
+          src={fullSrc}
+          alt="Clouds"
+          className="absolute top-0 left-1/2 h-full object-cover"
+          style={{ width: "50%" }}
+        />
+      </div>
     </div>
   );
 };
@@ -121,36 +175,44 @@ const AnimatedLandingPage: React.FC = () => {
       </svg>
 
       {/* Layer 4: Far Clouds */}
-      <CloudLayer
-        src="/assets/Clouds 1/2L.png"
-        side="left"
-        delay={500}
-        animationStarted={animationStarted}
-        zIndex={30}
-      />
-      <CloudLayer
-        src="/assets/Clouds 1/2R.png"
-        side="right"
-        delay={500}
-        animationStarted={animationStarted}
-        zIndex={30}
-      />
+<CloudLayer
+  src="/assets/Clouds 1/2L.png"
+  side="left"
+  delay={500}
+  animationStarted={animationStarted}
+  zIndex={30}
+  fullSrc="/assets/Clouds 1/2.png"
+  animationSpeed={80} // Slower for far clouds
+/>
+<CloudLayer
+  src="/assets/Clouds 1/2R.png"
+  side="right"
+  delay={500}
+  animationStarted={animationStarted}
+  zIndex={30}
+  fullSrc="/assets/Clouds 1/2.png"
+  animationSpeed={80}
+/>
 
-      {/* Layer 5: Near Clouds */}
-      <CloudLayer
-        src="/assets/Clouds 1/4L.png"
-        side="left"
-        delay={1000}
-        animationStarted={animationStarted}
-        zIndex={40}
-      />
-      <CloudLayer
-        src="/assets/Clouds 1/4R.png"
-        side="right"
-        delay={1000}
-        animationStarted={animationStarted}
-        zIndex={40}
-      />
+{/* Layer 5: Near Clouds */}
+<CloudLayer
+  src="/assets/Clouds 1/4L.png"
+  side="left"
+  delay={1000}
+  animationStarted={animationStarted}
+  zIndex={40}
+  fullSrc="/assets/Clouds 1/4.png"
+  animationSpeed={60} // Faster for near clouds (parallax effect)
+/>
+<CloudLayer
+  src="/assets/Clouds 1/4R.png"
+  side="right"
+  delay={1000}
+  animationStarted={animationStarted}
+  zIndex={40}
+  fullSrc="/assets/Clouds 1/4.png"
+  animationSpeed={60}
+/>
 
       {/* UI Content */}
       <div

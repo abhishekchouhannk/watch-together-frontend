@@ -5,6 +5,7 @@
    --animate-rotate-rays: rotate-rays 20s linear infinite;
    --animate-pulse-ray-even: pulse-ray-even 2s ease-in-out infinite;
    --animate-pulse-ray-odd: pulse-ray-odd 2s ease-in-out infinite;
+   --animate-cloud-scroll: cloud-scroll 60s linear infinite;
 
   @keyframes rotate-rays {
           from { transform: rotate(0deg) }
@@ -20,6 +21,11 @@
           '0%, 100%': { transform: scaleX(1.5); opacity: 0.8 }
           '50%': { transform: scaleX(10); opacity: 1 }
         }
+
+  @keyframes cloud-scroll {
+    '0%': { transform: translateX(0) },
+    '100%': { transform: translateX(-50%) }
+  }
 
   /* Color palette for your watch-together app */
   --color-primary: #3B82F6;
