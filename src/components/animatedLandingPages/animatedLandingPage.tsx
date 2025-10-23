@@ -159,9 +159,9 @@ const TIME_THEMES = {
       right: '/assets/afternoon1/3R-near.png',
       full: '/assets/afternoon1/3-near.png',
     },
-    textColor: 'text-white',
-    buttonPrimary: 'bg-white text-sky-600 hover:bg-sky-50',
-    buttonSecondary: 'bg-white/20 hover:bg-white/30 text-white border-2 border-white/50',
+    textColor: 'text-sky-900',
+    buttonPrimary: 'bg-yellow-400 hover:bg-yellow-500 text-sky-900',
+    buttonSecondary: 'bg-white/70 hover:bg-white/90 text-sky-700 border border-sky-300',
   },
   evening: {
     name: 'evening',
@@ -208,7 +208,7 @@ const getTimeOfDay = (hour: number): keyof typeof TIME_THEMES => {
   if (hour >= 5 && hour < 12) return 'morning';
   if (hour >= 12 && hour < 17) return 'afternoon';
   if (hour >= 17 && hour < 21) return 'evening';
-  return 'morning';
+  return 'afternoon';
 };
 
 const AnimatedLandingPage: React.FC = () => {
@@ -317,7 +317,7 @@ const AnimatedLandingPage: React.FC = () => {
           {/* Twinkling Stars */}
           <TwinklingStars 
             zIndex={5} 
-            starCount={100} 
+            starCount={600} 
             animationStarted={animationStarted}
             density="sparse"
             showShootingStars={true}
@@ -448,11 +448,11 @@ const AnimatedLandingPage: React.FC = () => {
       </div>
 
       {/* Optional: Time indicator for testing */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1 rounded-lg text-sm" style={{ zIndex: 100 }}>
-          {currentTheme.name} ({currentTime.toLocaleTimeString()})
-        </div>
-      )}
+{process.env.NODE_ENV === 'development' && typeof window !== 'undefined' && (
+  <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1 rounded-lg text-sm" style={{ zIndex: 100 }}>
+    {currentTheme.name} ({currentTime.toLocaleTimeString()})
+  </div>
+)}
     </div>
   );
 };

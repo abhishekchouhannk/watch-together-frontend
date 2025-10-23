@@ -1,15 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
-
-interface Star {
-  id: number;
-  x: number;
-  y: number;
-  size: number;
-  duration: number;
-  delay: number;
-  opacity: number;
-  type: "normal" | "bright" | "dim";
-}
+import React, { useEffect, useRef, useState, useMemo } from "react";
 
 interface TwinklingStarsProps {
   zIndex?: number;
@@ -19,6 +8,26 @@ interface TwinklingStarsProps {
   density?: "sparse" | "normal" | "dense";
 }
 
+interface Star {
+  x: number;
+  y: number;
+  baseSize: number;
+  currentSize: number;
+  baseOpacity: number;
+  currentOpacity: number;
+  twinkleSpeed: number;
+  twinklePhase: number;
+  type: 'bright' | 'dim' | 'normal';
+}
+
+interface TwinklingStarsProps {
+  zIndex?: number;
+  starCount?: number;
+  animationStarted?: boolean;
+  showShootingStars?: boolean;
+  density?: 'sparse' | 'normal' | 'dense';
+}
+
 const TwinklingStars: React.FC<TwinklingStarsProps> = ({
   zIndex = 5,
   starCount = 80,
@@ -26,7 +35,9 @@ const TwinklingStars: React.FC<TwinklingStarsProps> = ({
   showShootingStars = false,
   density = "normal",
 }) => {
-  const [mounted, setMounted] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animationRef = useRef<number>(null);
+  const starsRef = useRef<Star[]>([]);
   const [shootingStar, setShootingStar] = useState<{
     x: number;
     y: number;
@@ -34,57 +45,136 @@ const TwinklingStars: React.FC<TwinklingStarsProps> = ({
 
   // Adjust star count based on density
   const adjustedStarCount = useMemo(() => {
-    const multiplier =
-      density === "sparse" ? 0.6 : density === "dense" ? 1.5 : 1;
+    const multiplier = density === "sparse" ? 0.6 : density === "dense" ? 1.5 : 1;
     return Math.floor(starCount * multiplier);
   }, [starCount, density]);
 
-  // Generate stars with random properties
-  const stars = useMemo(() => {
-    const generatedStars: Star[] = [];
+  // Initialize stars
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-    for (let i = 0; i < adjustedStarCount; i++) {
-      // Determine star type (10% bright, 20% dim, 70% normal)
-      const rand = Math.random();
-      let type: Star["type"] = "normal";
-      if (rand < 0.1) type = "bright";
-      else if (rand < 0.3) type = "dim";
+    const initStars = () => {
+      const stars: Star[] = [];
+      
+      for (let i = 0; i < adjustedStarCount; i++) {
+        const rand = Math.random();
+        let type: Star["type"] = "normal";
+        if (rand < 0.1) type = "bright";
+        else if (rand < 0.3) type = "dim";
 
-      generatedStars.push({
-        id: i,
-        x: Math.random() * 100,
-        y: Math.random() * 65, // Upper 65% of screen
-        size:
-          type === "bright"
-            ? Math.random() * 2 + 1.5
-            : type === "dim"
-            ? Math.random() * 0.8 + 0.3
-            : Math.random() * 1.5 + 0.5,
-        duration:
-          type === "bright"
-            ? Math.random() * 2 + 1.5
-            : type === "dim"
-            ? Math.random() * 4 + 3
-            : Math.random() * 3 + 2,
-        delay: Math.random() * 4,
-        opacity:
-          type === "bright"
-            ? Math.random() * 0.2 + 0.8
-            : type === "dim"
-            ? Math.random() * 0.3 + 0.3
-            : Math.random() * 0.4 + 0.6,
-        type,
-      });
-    }
+        const baseSize = type === "bright" 
+          ? Math.random() * 2 + 1.5
+          : type === "dim"
+          ? Math.random() * 0.8 + 0.3
+          : Math.random() * 1.5 + 0.5;
 
-    return generatedStars;
+        const baseOpacity = type === "bright"
+          ? Math.random() * 0.2 + 0.8
+          : type === "dim"
+          ? Math.random() * 0.3 + 0.3
+          : Math.random() * 0.4 + 0.6;
+
+        stars.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * (canvas.height * 0.65), // Upper 65% of screen
+          baseSize,
+          currentSize: baseSize,
+          baseOpacity,
+          currentOpacity: baseOpacity,
+          twinkleSpeed: Math.random() * 0.02 + 0.005, // Speed of twinkling
+          twinklePhase: Math.random() * Math.PI * 2, // Random starting phase
+          type,
+        });
+      }
+      
+      starsRef.current = stars;
+    };
+
+    // Handle resize
+    const handleResize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      initStars();
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
   }, [adjustedStarCount]);
 
+  // Animation loop for canvas stars
   useEffect(() => {
-    setTimeout(() => setMounted(true), 100);
-  }, []);
+    if (!animationStarted) return;
 
-  // Shooting star animation
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const animate = () => {
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Update and draw each star
+      starsRef.current.forEach((star) => {
+        // Update twinkle phase
+        star.twinklePhase += star.twinkleSpeed;
+        
+        // Calculate current opacity and size with sine wave for smooth twinkling
+        const twinkleFactor = (Math.sin(star.twinklePhase) + 1) / 2; // 0 to 1
+        star.currentOpacity = star.baseOpacity * (0.3 + twinkleFactor * 0.7);
+        star.currentSize = star.baseSize * (0.8 + twinkleFactor * 0.2);
+
+        // Draw star with glow effect
+        ctx.save();
+        
+        // Draw glow for bright stars
+        if (star.type === 'bright') {
+          const gradient = ctx.createRadialGradient(
+            star.x, star.y, 0,
+            star.x, star.y, star.currentSize * 4
+          );
+          gradient.addColorStop(0, `rgba(255, 255, 255, ${star.currentOpacity * 0.8})`);
+          gradient.addColorStop(0.5, `rgba(200, 220, 255, ${star.currentOpacity * 0.3})`);
+          gradient.addColorStop(1, 'rgba(200, 220, 255, 0)');
+          ctx.fillStyle = gradient;
+          ctx.fillRect(
+            star.x - star.currentSize * 4,
+            star.y - star.currentSize * 4,
+            star.currentSize * 8,
+            star.currentSize * 8
+          );
+        }
+
+        // Draw star core
+        ctx.globalAlpha = star.currentOpacity;
+        ctx.fillStyle = star.type === 'bright' ? '#ffffff' 
+          : star.type === 'dim' ? '#e0e7ff' 
+          : '#f3f4f6';
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.currentSize, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.restore();
+      });
+
+      animationRef.current = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [animationStarted]);
+
+  // Shooting star animation (original SVG logic)
   useEffect(() => {
     if (!showShootingStars || !animationStarted) return;
 
@@ -94,7 +184,7 @@ const TwinklingStars: React.FC<TwinklingStarsProps> = ({
         y: Math.random() * 30,
       });
 
-      setTimeout(() => setShootingStar(null), 1500);
+      setTimeout(() => setShootingStar(null), 1500); // Matches the total animation time
     };
 
     // Random shooting stars every 8-15 seconds
@@ -103,62 +193,25 @@ const TwinklingStars: React.FC<TwinklingStarsProps> = ({
         triggerShootingStar();
       }
       // Schedule next one
-      setTimeout(shootStar, Math.random() * 1000 + 1000);
+      setTimeout(shootStar, Math.random() * 1000 + 2000);
     };
 
     // Start the cycle
-    const initialDelay = setTimeout(shootStar, Math.random() * 1000 + 1000);
+    const initialDelay = setTimeout(shootStar, Math.random() * 5000 + 3000);
 
     return () => clearTimeout(initialDelay);
   }, [showShootingStars, animationStarted]);
-
-  const getStarColor = (type: Star["type"]) => {
-    switch (type) {
-      case "bright":
-        return "bg-white";
-      case "dim":
-        return "bg-blue-100";
-      default:
-        return "bg-gray-100";
-    }
-  };
-
-  const getStarGlow = (star: Star) => {
-    const glowSize = star.size * 3;
-    const glowOpacity = star.opacity * 0.6;
-
-    if (star.type === "bright") {
-      return `0 0 ${glowSize}px rgba(255, 255, 255, ${glowOpacity}), 0 0 ${
-        glowSize * 1.5
-      }px rgba(200, 220, 255, ${glowOpacity * 0.5})`;
-    }
-    return `0 0 ${glowSize}px rgba(255, 255, 255, ${glowOpacity * 0.8})`;
-  };
 
   return (
     <div
       className="absolute inset-0 overflow-hidden pointer-events-none"
       style={{ zIndex }}
     >
-      {/* Regular twinkling stars */}
-      {stars.map((star) => (
-        <div
-          key={star.id}
-          className={`absolute rounded-full ${getStarColor(
-            star.type
-          )} transition-opacity duration-1000 ${
-            mounted && animationStarted ? "opacity-100" : "opacity-0"
-          }`}
-          style={{
-            left: `${star.x}%`,
-            top: `${star.y}%`,
-            width: `${star.size}px`,
-            height: `${star.size}px`,
-            animation: `twinkle-${star.type} ${star.duration}s ease-in-out ${star.delay}s infinite`,
-            boxShadow: getStarGlow(star),
-          }}
-        />
-      ))}
+      {/* Canvas for regular twinkling stars */}
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 pointer-events-none"
+      />
 
       {/* Shooting star */}
       {shootingStar && (
@@ -221,41 +274,8 @@ const TwinklingStars: React.FC<TwinklingStarsProps> = ({
           />
         </div>
       )}
-
-      {/* CSS Animations */}
+            {/* CSS Animations */}
       <style>{`
-  @keyframes twinkle-normal {
-    0%, 100% {
-      opacity: 0.4;
-      transform: scale(1);
-    }
-    50% {
-      opacity: 1;
-      transform: scale(1.2);
-    }
-  }
-
-  @keyframes twinkle-bright {
-    0%, 100% {
-      opacity: 0.7;
-      transform: scale(1);
-    }
-    50% {
-      opacity: 1;
-      transform: scale(1.4);
-    }
-  }
-
-  @keyframes twinkle-dim {
-    0%, 100% {
-      opacity: 0.2;
-      transform: scale(0.9);
-    }
-    50% {
-      opacity: 0.5;
-      transform: scale(1.1);
-    }
-  }
 
   @keyframes move-star {
     0% {
@@ -294,6 +314,8 @@ const TwinklingStars: React.FC<TwinklingStarsProps> = ({
   }
 `}</style>
     </div>
+
+    
   );
 };
 
