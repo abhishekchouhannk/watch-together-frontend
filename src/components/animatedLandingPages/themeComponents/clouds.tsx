@@ -28,7 +28,7 @@ const CloudLayer: React.FC<CloudLayerProps> = ({
       // Switch to full cloud after initial animation completes
       const timer = setTimeout(() => {
         setShowFullCloud(true);
-      }, delay + 2500); // Match exactly with transition duration
+      }, delay + 3200); // 2500ms is the transition duration
       return () => clearTimeout(timer);
     }
   }, [animationStarted, delay]);
@@ -47,13 +47,13 @@ const CloudLayer: React.FC<CloudLayerProps> = ({
               transitionDelay: `${delay}ms`,
               transform: animationStarted
                 ? "translateX(0)"
-                : `translateX(-100%)`, // Move full width off screen
+                : "translateX(-100%)",
             }}
           >
             <img
               src={srcLeft}
               alt="Clouds left"
-              className="h-full"
+              className="w-[100vw] h-full"
             />
           </div>
         )}
@@ -67,13 +67,13 @@ const CloudLayer: React.FC<CloudLayerProps> = ({
               transitionDelay: `${delay}ms`,
               transform: animationStarted
                 ? "translateX(0)"
-                : `translateX(100%)`, // Move full width off screen
+                : "translateX(100%)",
             }}
           >
             <img
               src={srcRight}
               alt="Clouds right"
-              className="h-full"
+              className="w-[100vw] h-full"
             />
           </div>
         )}
@@ -83,47 +83,43 @@ const CloudLayer: React.FC<CloudLayerProps> = ({
 
   // Full cloud with infinite scroll
   return (
-    <div
+      <div
       className="absolute top-0 left-0 w-full h-full overflow-hidden"
       style={{ zIndex }}
     >
-      {/* Container for the scrolling clouds */}
+      {/* Container that holds both images side by side */}
       <div
-        className="absolute top-0 h-full"
+        className="absolute top-0 h-full flex will-change-transform"
         style={{
-          left: '50%',
-          marginLeft: `-${cloudWidth}px`, // Start position matches where split clouds end
-          width: `${cloudWidth * 3}px`, // Three widths for seamless loop (one extra for buffer)
-          animation: `cloudScroll-${zIndex} ${scrollSpeed}s linear infinite`,
+          left: 0,
+          animation: `cloudScroll ${scrollSpeed}s linear infinite`,
         }}
       >
-        {/* Three instances for completely seamless scrolling */}
-        <div className="flex h-full">
+        {/* First image */}
+        <div className="h-full flex-shrink-0">
           <img 
             src={srcFull} 
-            alt="Scrolling clouds 1"
+            alt="Scrolling clouds" 
+            className="h-full block"
             style={{
-              height: "100%",
-              width: `auto`,
-              objectFit: 'cover'
+              width: "auto",
+              minWidth: "100vw",
+              maxWidth: "none",
+              objectFit: "cover",
             }}
           />
+        </div>
+        {/* Second image - exact duplicate */}
+        <div className="h-full flex-shrink-0">
           <img
             src={srcFull}
-            alt="Scrolling clouds 2"
+            alt="Scrolling clouds duplicate"
+            className="h-full block"
             style={{
-                height: "100%",
-              width: `auto`,
-              objectFit: 'cover'
-            }}
-          />
-          <img
-            src={srcFull}
-            alt="Scrolling clouds 3"
-            style={{
-                height: "100%",
-              width: `auto`,
-              objectFit: 'cover'
+              width: "auto",
+              minWidth: "100vw",
+              maxWidth: "none",
+              objectFit: "cover",
             }}
           />
         </div>
@@ -131,12 +127,12 @@ const CloudLayer: React.FC<CloudLayerProps> = ({
 
       {/* Add CSS animation via style tag */}
       <style jsx>{`
-        @keyframes cloudScroll-${zIndex} {
+        @keyframes cloudScroll {
           from {
             transform: translateX(0);
           }
           to {
-            transform: translateX(-${cloudWidth}px);
+            transform: translateX(-50%);
           }
         }
       `}</style>
