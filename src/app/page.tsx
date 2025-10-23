@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { socket } from "@/lib/socket";
-import AnimatedLandingPage from '@/components/animatedLandingPage';
+import AnimatedLandingPage from '@/components/animatedLandingPages/animatedLandingPage';
 
 export default function HomePage() {
   // placeholder data

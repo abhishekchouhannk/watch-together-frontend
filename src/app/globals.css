@@ -35,6 +35,8 @@
   --color-background-light: #1E1E1E;
   
   --color-surface: #1F2937;
+
+
   
   /* You can also define these in oklch format for better color manipulation */
   /* Example conversions (approximate):
@@ -58,3 +60,7 @@
 .dark {
   color-scheme: dark;
 }
+
+  @utility blur-xs {
+    filter: blur(1.2px);
+  }
