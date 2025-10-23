@@ -7,8 +7,7 @@ interface CloudLayerProps {
   delay: number;
   animationStarted: boolean;
   zIndex: number;
-  scrollSpeed?: number; // in seconds for full scroll
-  cloudWidth?: number; // fixed width for cloud images in pixels
+  scrollSpeed?: number; // seconds for full scroll
 }
 
 const CloudLayer: React.FC<CloudLayerProps> = ({
@@ -19,22 +18,67 @@ const CloudLayer: React.FC<CloudLayerProps> = ({
   animationStarted,
   zIndex,
   scrollSpeed = 60,
-  cloudWidth = 1920, // default to common desktop width
 }) => {
   const [showFullCloud, setShowFullCloud] = useState(false);
+  const [offset, setOffset] = useState(0);
+  const [useStretch, setUseStretch] = useState(false);
+
+  useEffect(() => {
+    const updateOffsets = () => {
+      const imgWidth = 576;
+      const imgHeight = 324;
+      const imgRatio = imgWidth / imgHeight;
+      const scaledWidth = imgRatio * window.innerHeight;
+      const browserWidth = window.innerWidth;
+
+      console.log(`browserWidth: ${window.innerWidth}`);
+      console.log(`scaledWidth: ${scaledWidth}`);
+
+      if (imgWidth <= browserWidth) {
+        // Stretch case — just slide both sides 100%
+        setUseStretch(true);
+        setOffset(0);
+      } else {
+        setUseStretch(false);
+        // Calculate the percentage of the image visible within the browser
+        const visibleRatio = browserWidth / imgWidth; // e.g. 0.8 if only 80% visible
+        // Calculate offset so both halves meet at center (50%)
+        const hiddenRatio = (1 - visibleRatio) / 2;
+        setOffset(hiddenRatio); // e.g. 0.1 means each side hides 10% offscreen
+      }
+    };
+
+    updateOffsets();
+    window.addEventListener("resize", updateOffsets);
+    2;
+    return () => window.removeEventListener("resize", updateOffsets);
+  }, []);
 
   useEffect(() => {
     if (animationStarted) {
-      // Switch to full cloud after initial animation completes
       const timer = setTimeout(() => {
         setShowFullCloud(true);
-      }, delay + 3200); // 2500ms is the transition duration
+      }, delay + 3200); // after transition
       return () => clearTimeout(timer);
     }
   }, [animationStarted, delay]);
 
-  // Split cloud pieces (initial animation)
+  // === Split Clouds Animation ===
   if (!showFullCloud) {
+    const leftTransform = animationStarted
+      ? useStretch
+        ? "translateX(0)" // normal slide
+        : `translateX(${(1 - offset) * 100}%)` // partial reveal
+      : "translateX(-100%)";
+
+    const rightTransform = animationStarted
+      ? useStretch
+        ? "translateX(0)"
+        : `translateX(-${(1 - offset) * 100}%)`
+      : "translateX(100%)";
+
+    const imgClass = useStretch ? "w-[100vw] h-full" : "h-full w-auto";
+
     return (
       <>
         {srcLeft && (
@@ -45,18 +89,18 @@ const CloudLayer: React.FC<CloudLayerProps> = ({
               left: 0,
               transitionDuration: "2500ms",
               transitionDelay: `${delay}ms`,
-              transform: animationStarted
-                ? "translateX(0)"
-                : "translateX(-100%)",
+              transform: leftTransform,
             }}
           >
             <img
               src={srcLeft}
               alt="Clouds left"
-              className="w-[100vw] h-full"
+              className={imgClass}
+              style={{ objectFit: "cover" }}
             />
           </div>
         )}
+
         {srcRight && (
           <div
             className="absolute top-0 h-full transition-transform ease-out"
@@ -65,15 +109,14 @@ const CloudLayer: React.FC<CloudLayerProps> = ({
               right: 0,
               transitionDuration: "2500ms",
               transitionDelay: `${delay}ms`,
-              transform: animationStarted
-                ? "translateX(0)"
-                : "translateX(100%)",
+              transform: rightTransform,
             }}
           >
             <img
               src={srcRight}
               alt="Clouds right"
-              className="w-[100vw] h-full"
+              className={imgClass}
+              style={{ objectFit: "cover" }}
             />
           </div>
         )}
@@ -81,13 +124,12 @@ const CloudLayer: React.FC<CloudLayerProps> = ({
     );
   }
 
-  // Full cloud with infinite scroll
+  // === Full Cloud (unchanged) ===
   return (
-      <div
+    <div
       className="absolute top-0 left-0 w-full h-full overflow-hidden"
       style={{ zIndex }}
     >
-      {/* Container that holds both images side by side */}
       <div
         className="absolute top-0 h-full flex will-change-transform"
         style={{
@@ -95,21 +137,23 @@ const CloudLayer: React.FC<CloudLayerProps> = ({
           animation: `cloudScroll ${scrollSpeed}s linear infinite`,
         }}
       >
-        {/* First image */}
         <div className="h-full flex-shrink-0">
-          <img 
-            src={srcFull} 
-            alt="Scrolling clouds" 
+          <img
+            src={srcFull}
+            alt="Scrolling clouds"
             className="h-full block"
             style={{
               width: "auto",
               minWidth: "100vw",
               maxWidth: "none",
               objectFit: "cover",
+              ...(useStretch
+                ? {}
+                : { transform: `translateX(-${offset * 100}%)` }),
             }}
           />
         </div>
-        {/* Second image - exact duplicate */}
+
         <div className="h-full flex-shrink-0">
           <img
             src={srcFull}
@@ -120,12 +164,14 @@ const CloudLayer: React.FC<CloudLayerProps> = ({
               minWidth: "100vw",
               maxWidth: "none",
               objectFit: "cover",
+              ...(useStretch
+                ? {}
+                : { transform: `translateX(${(1 - offset) * 100}%)` }),
             }}
           />
         </div>
       </div>
 
-      {/* Add CSS animation via style tag */}
       <style jsx>{`
         @keyframes cloudScroll {
           from {

@@ -198,7 +198,7 @@ const AnimatedLandingPage: React.FC = () => {
         delay={500}
         animationStarted={animationStarted}
         zIndex={30}
-        scrollSpeed={80}
+        scrollSpeed={10}
       />
 
       {/* Layer 5: Near Clouds */}
@@ -209,7 +209,7 @@ const AnimatedLandingPage: React.FC = () => {
         delay={1000}
         animationStarted={animationStarted}
         zIndex={40}
-        scrollSpeed={40}
+        scrollSpeed={5}
       />
 
       {/* UI Content */}
