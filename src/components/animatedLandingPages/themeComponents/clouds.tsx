@@ -42,25 +42,18 @@ const CloudLayer: React.FC<CloudLayerProps> = ({
             className="absolute top-0 h-full transition-transform ease-out"
             style={{
               zIndex,
-              left: '50%',
-              marginLeft: `-${cloudWidth}px`, // Position left piece
-              width: `${cloudWidth}px`,
+              left: 0,
               transitionDuration: "2500ms",
               transitionDelay: `${delay}ms`,
               transform: animationStarted
                 ? "translateX(0)"
-                : `translateX(-${cloudWidth}px)`, // Move full width off screen
+                : `translateX(-100%)`, // Move full width off screen
             }}
           >
             <img
               src={srcLeft}
               alt="Clouds left"
               className="h-full"
-              style={{ 
-                width: `${cloudWidth}px`,
-                objectFit: 'cover',
-                objectPosition: 'left center'
-              }}
             />
           </div>
         )}
@@ -69,24 +62,18 @@ const CloudLayer: React.FC<CloudLayerProps> = ({
             className="absolute top-0 h-full transition-transform ease-out"
             style={{
               zIndex,
-              left: '50%',
-              width: `${cloudWidth}px`,
+              right: 0,
               transitionDuration: "2500ms",
               transitionDelay: `${delay}ms`,
               transform: animationStarted
                 ? "translateX(0)"
-                : `translateX(${cloudWidth}px)`, // Move full width off screen
+                : `translateX(100%)`, // Move full width off screen
             }}
           >
             <img
               src={srcRight}
               alt="Clouds right"
               className="h-full"
-              style={{ 
-                width: `${cloudWidth}px`,
-                objectFit: 'cover',
-                objectPosition: 'right center'
-              }}
             />
           </div>
         )}
