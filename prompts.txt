@@ -1,0 +1,77 @@
+// Can you help me write a small code block or React component (with Tailwind)?
+
+// I have built a thematic afternoon sky landing page with clouds, a sun, and an animated blimp passing through the sky behind the clouds. However, it still looks really barebones, and I want to make the clouds appear to be moving as well. 
+
+// Right now, I have utilized 2 layers of clouds, where one is for far-off clouds and one is for nearer clouds (which look more whitish). Both are split into left and right pieces that come in from left and right to make a background of clouds along with other elements to make the afternoon sky. 
+
+// This is the code for CloudLayer
+
+// const CloudLayer: React.FC<CloudLayerProps> = ({
+//   src,
+//   side,
+//   delay,
+//   animationStarted,
+//   zIndex,
+// }) => {
+//   const isLeft = side === "left";
+
+//   return (
+//     <div
+//       className={`absolute top-0 h-full transition-transform ease-out`}
+//       style={{
+//         zIndex,
+//         [isLeft ? "left" : "right"]: 0,
+//         transitionDuration: "2500ms",
+//         transitionDelay: `${delay}ms`,
+//         transform: animationStarted
+//           ? "translateX(0)"
+//           : `translateX(${isLeft ? "-100%" : "100%"})`,
+//       }}
+//     >
+//       <img
+//         src={src}
+//         alt={`Clouds ${side}`}
+//         className="w-full h-full object-cover"
+//       />
+//     </div>
+//   );
+// };
+
+// (Below is usage in main AnimatedPage.)
+// {/* Layer 4: Far Clouds */}
+//       <CloudLayer
+//         src="/assets/afternoon1/2L.png"
+//         side="left"
+//         delay={500}
+//         animationStarted={animationStarted}
+//         zIndex={30}
+//       />
+//       <CloudLayer
+//         src="/assets/afternoon1/2R.png"
+//         side="right"
+//         delay={500}
+//         animationStarted={animationStarted}
+//         zIndex={30}
+//       />
+
+//       {/* Layer 5: Near Clouds */}
+//       <CloudLayer
+//         src="/assets/afternoon1/4L.png"
+//         side="left"
+//         delay={1000}
+//         animationStarted={animationStarted}
+//         zIndex={40}
+//       />
+//       <CloudLayer
+//         src="/assets/afternoon1/4R.png"
+//         side="right"
+//         delay={1000}
+//         animationStarted={animationStarted}
+//         zIndex={40}
+//       />
+
+// I want the clouds to be moving now. So, once the 4th layer (i.e., 2L, 2R) and 5th layer (4L, 4R) are in place, the code switches to utilize the full 2.png and 4.png background (the change would not be noticeable as it would just swap the already there background). 
+
+// Once the new full background is in, I want to translate both 2.png and 4.png indefinitely from left to right. The speed should be slow.
+
+// Also, once the part passes to the right, it should come back in from the left, kind of like a looping animation of the PNG across the webpage from left to right.

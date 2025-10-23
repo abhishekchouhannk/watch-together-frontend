@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import AnimatedSun from "./animatedSun";
 
 interface CloudLayerProps {
@@ -123,11 +123,100 @@ const CloudLayer: React.FC<CloudLayerProps> = ({
   );
 };
 
+// Theme configuration
+const themes = {
+  morning: {
+    name: 'morning',
+    timeRange: [5, 12],
+    bgColor: 'bg-orange-200',
+    skyAsset: '/assets/morning1/1-sky.png',
+    farClouds: {
+      left: '/assets/morning1/2L-far.png',
+      right: '/assets/morning1/2R-far.png',
+      full: '/assets/morning1/2-far.png',
+    },
+    element: '/assets/morning1/element.png',
+    nearClouds: {
+      left: '/assets/morning1/3L-near.png',
+      right: '/assets/morning1/3R-near.png',
+      full: '/assets/morning1/3-near.png',
+    },
+    elementComponent: 'sun', // or custom component
+  },
+  afternoon: {
+    name: 'afternoon',
+    timeRange: [12, 17],
+    bgColor: 'bg-sky-300',
+    skyAsset: '/assets/Clouds 1/1-sky.png',
+    farClouds: {
+      left: '/assets/Clouds 1/2L-far.png',
+      right: '/assets/Clouds 1/2R-far.png',
+      full: '/assets/Clouds 1/2-far.png',
+    },
+    element: '/assets/Clouds 1/3-element.png',
+    nearClouds: {
+      left: '/assets/Clouds 1/4L-near.png',
+      right: '/assets/Clouds 1/4R-near.png',
+      full: '/assets/Clouds 1/4-near.png',
+    },
+    elementComponent: 'sun',
+  },
+  evening: {
+    name: 'evening',
+    timeRange: [17, 20],
+    bgColor: 'bg-orange-400',
+    skyAsset: '/assets/Evening/1-sky.png',
+    farClouds: {
+      left: '/assets/Evening/2L-far.png',
+      right: '/assets/Evening/2R-far.png',
+      full: '/assets/Evening/2-far.png',
+    },
+    element: '/assets/Evening/3-element.png',
+    nearClouds: {
+      left: '/assets/Evening/4L-near.png',
+      right: '/assets/Evening/4R-near.png',
+      full: '/assets/Evening/4-near.png',
+    },
+    elementComponent: 'sun',
+  },
+  night: {
+    name: 'night',
+    timeRange: [20, 5],
+    bgColor: 'bg-indigo-900',
+    skyAsset: '/assets/Night/1-sky.png',
+    farClouds: {
+      left: '/assets/Night/2L-far.png',
+      right: '/assets/Night/2R-far.png',
+      full: '/assets/Night/2-far.png',
+    },
+    element: '/assets/Night/3-element.png',
+    nearClouds: {
+      left: '/assets/Night/4L-near.png',
+      right: '/assets/Night/4R-near.png',
+      full: '/assets/Night/4-near.png',
+    },
+    elementComponent: 'moon',
+  },
+};
+
+// Helper function to determine current theme
+const getCurrentTheme = () => {
+  const hour = new Date().getHours();
+  
+  if (hour >= 5 && hour < 12) return themes.morning;
+  if (hour >= 12 && hour < 17) return themes.afternoon;
+  if (hour >= 17 && hour < 20) return themes.evening;
+  return themes.night;
+};
+
 const AnimatedLandingPage: React.FC = () => {
   const [animationStarted, setAnimationStarted] = useState(false);
   const [blimpTrail, setBlimpTrail] = useState<Array<{ x: number; y: number }>>(
     []
   );
+  
+  // Get current theme based on time of day
+  const currentTheme = useMemo(() => getCurrentTheme(), []);
 
   useEffect(() => {
     setTimeout(() => setAnimationStarted(true), 200);
@@ -137,7 +226,7 @@ const AnimatedLandingPage: React.FC = () => {
 
     const blimpAnimation = setInterval(() => {
       if (progress <= 100) {
-        const x = 10 + progress * 0.7; // Start 10%, end 80%
+        const x = 10 + progress * 0.7;
         const y = 40 + Math.sin(progress * 0.05) * 15 - progress * 0.2;
 
         trail.push({ x, y });
@@ -153,8 +242,32 @@ const AnimatedLandingPage: React.FC = () => {
     return () => clearInterval(blimpAnimation);
   }, []);
 
+  // Render theme-specific element (sun/moon/etc)
+  const renderThemeElement = () => {
+    if (currentTheme.elementComponent === 'sun') {
+      return <AnimatedSun zIndex={10} />;
+    } else if (currentTheme.elementComponent === 'moon') {
+      return <AnimatedMoon zIndex={10} />;
+    }
+    // Fallback to static image if no component specified
+    return (
+      <div
+        className={`absolute inset-0 transition-all duration-[1000ms] ${
+          animationStarted ? 'opacity-100' : 'opacity-0'
+        }`}
+        style={{ zIndex: 10 }}
+      >
+        <img
+          src={currentTheme.element}
+          alt="Theme Element"
+          className="w-full h-full object-cover"
+        />
+      </div>
+    );
+  };
+
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-sky-300">
+    <div className={`relative w-full h-screen overflow-hidden ${currentTheme.bgColor}`}>
       {/* Layer 1: Sky Background */}
       <div
         className={`absolute inset-0 transition-all duration-[1000ms] ${
@@ -163,14 +276,14 @@ const AnimatedLandingPage: React.FC = () => {
         style={{ zIndex: 0 }}
       >
         <img
-          src="/assets/afternoon1/1-sky.png"
+          src={currentTheme.skyAsset}
           alt="Sky"
           className="w-full h-full object-cover"
         />
       </div>
 
-      {/* Layer 2: Sun */}
-      <AnimatedSun zIndex={10} />
+      {/* Layer 2: Theme-specific Element (Sun/Moon/etc) */}
+      {renderThemeElement()}
 
       {/* Layer 3: Animated Blimp */}
       <svg
@@ -204,24 +317,24 @@ const AnimatedLandingPage: React.FC = () => {
 
       {/* Layer 4: Far Clouds */}
       <CloudLayer
-        srcLeft="/assets/afternoon1/2L-far.png"
-        srcRight="/assets/afternoon1/2R-far.png"
-        srcFull="/assets/afternoon1/2-far.png"
+        srcLeft={currentTheme.farClouds.left}
+        srcRight={currentTheme.farClouds.right}
+        srcFull={currentTheme.farClouds.full}
         delay={500}
         animationStarted={animationStarted}
         zIndex={30}
-        scrollSpeed={80} // Slower for far clouds
+        scrollSpeed={80}
       />
 
       {/* Layer 5: Near Clouds */}
       <CloudLayer
-        srcLeft="/assets/afternoon1/4L-near.png"
-        srcRight="/assets/afternoon1/4R-near.png"
-        srcFull="/assets/afternoon1/4-near.png"
+        srcLeft={currentTheme.nearClouds.left}
+        srcRight={currentTheme.nearClouds.right}
+        srcFull={currentTheme.nearClouds.full}
         delay={1000}
         animationStarted={animationStarted}
         zIndex={40}
-        scrollSpeed={40} // Faster for near clouds (parallax effect)
+        scrollSpeed={40}
       />
 
       {/* UI Content */}
@@ -257,83 +370,18 @@ const AnimatedLandingPage: React.FC = () => {
   );
 };
 
+// Example AnimatedMoon component (add this if you don't have it)
+const AnimatedMoon: React.FC<{ zIndex: number }> = ({ zIndex }) => {
+  return (
+    <div
+      className="absolute top-[15%] right-[15%] w-24 h-24 rounded-full bg-gray-100 shadow-2xl animate-pulse"
+      style={{ zIndex }}
+    >
+      <div className="absolute inset-2 rounded-full bg-gray-200 opacity-50" />
+    </div>
+  );
+};
+
 export default AnimatedLandingPage;
 
 
-// Can you help me write a small code block or React component (with Tailwind)?
-
-// I have built a thematic afternoon sky landing page with clouds, a sun, and an animated blimp passing through the sky behind the clouds. However, it still looks really barebones, and I want to make the clouds appear to be moving as well. 
-
-// Right now, I have utilized 2 layers of clouds, where one is for far-off clouds and one is for nearer clouds (which look more whitish). Both are split into left and right pieces that come in from left and right to make a background of clouds along with other elements to make the afternoon sky. 
-
-// This is the code for CloudLayer
-
-// const CloudLayer: React.FC<CloudLayerProps> = ({
-//   src,
-//   side,
-//   delay,
-//   animationStarted,
-//   zIndex,
-// }) => {
-//   const isLeft = side === "left";
-
-//   return (
-//     <div
-//       className={`absolute top-0 h-full transition-transform ease-out`}
-//       style={{
-//         zIndex,
-//         [isLeft ? "left" : "right"]: 0,
-//         transitionDuration: "2500ms",
-//         transitionDelay: `${delay}ms`,
-//         transform: animationStarted
-//           ? "translateX(0)"
-//           : `translateX(${isLeft ? "-100%" : "100%"})`,
-//       }}
-//     >
-//       <img
-//         src={src}
-//         alt={`Clouds ${side}`}
-//         className="w-full h-full object-cover"
-//       />
-//     </div>
-//   );
-// };
-
-// (Below is usage in main AnimatedPage.)
-// {/* Layer 4: Far Clouds */}
-//       <CloudLayer
-//         src="/assets/afternoon1/2L.png"
-//         side="left"
-//         delay={500}
-//         animationStarted={animationStarted}
-//         zIndex={30}
-//       />
-//       <CloudLayer
-//         src="/assets/afternoon1/2R.png"
-//         side="right"
-//         delay={500}
-//         animationStarted={animationStarted}
-//         zIndex={30}
-//       />
-
-//       {/* Layer 5: Near Clouds */}
-//       <CloudLayer
-//         src="/assets/afternoon1/4L.png"
-//         side="left"
-//         delay={1000}
-//         animationStarted={animationStarted}
-//         zIndex={40}
-//       />
-//       <CloudLayer
-//         src="/assets/afternoon1/4R.png"
-//         side="right"
-//         delay={1000}
-//         animationStarted={animationStarted}
-//         zIndex={40}
-//       />
-
-// I want the clouds to be moving now. So, once the 4th layer (i.e., 2L, 2R) and 5th layer (4L, 4R) are in place, the code switches to utilize the full 2.png and 4.png background (the change would not be noticeable as it would just swap the already there background). 
-
-// Once the new full background is in, I want to translate both 2.png and 4.png indefinitely from left to right. The speed should be slow.
-
-// Also, once the part passes to the right, it should come back in from the left, kind of like a looping animation of the PNG across the webpage from left to right.
