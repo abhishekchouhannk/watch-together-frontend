@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
-import AnimatedSun from "./animatedSun";
+import AnimatedSun from "./themeComponents/animatedSun";
+import TwinklingStars from "./themeComponents/twinklingStars";
 
 interface CloudLayerProps {
   srcLeft?: string;
@@ -146,17 +147,17 @@ const TIME_THEMES = {
   afternoon: {
     name: 'afternoon',
     bgColor: 'bg-sky-300',
-    skyImage: '/assets/Clouds 1/1-sky.png',
+    skyImage: '/assets/afternoon1/1-sky.png',
     farClouds: {
-      left: '/assets/Clouds 1/2L-far.png',
-      right: '/assets/Clouds 1/2R-far.png',
-      full: '/assets/Clouds 1/2-far.png',
+      left: '/assets/afternoon1/2L-far.png',
+      right: '/assets/afternoon1/2R-far.png',
+      full: '/assets/afternoon1/2-far.png',
     },
     elementImage: null, // Uses animated blimp instead
     nearClouds: {
-      left: '/assets/Clouds 1/4L-near.png',
-      right: '/assets/Clouds 1/4R-near.png',
-      full: '/assets/Clouds 1/4-near.png',
+      left: '/assets/afternoon1/3L-near.png',
+      right: '/assets/afternoon1/3R-near.png',
+      full: '/assets/afternoon1/3-near.png',
     },
     textColor: 'text-white',
     buttonPrimary: 'bg-white text-sky-600 hover:bg-sky-50',
@@ -311,6 +312,15 @@ const AnimatedLandingPage: React.FC = () => {
       case 'morning':
         // Add morning-specific animations (e.g., rising sun)
         return (
+
+           <>
+          {/* Twinkling Stars */}
+          <TwinklingStars 
+            zIndex={5} 
+            starCount={200} 
+            animationStarted={animationStarted}
+            density="sparse"
+          />
           <div
             className={`absolute transition-all duration-[3000ms] ${
               animationStarted ? 'opacity-100' : 'opacity-0'
@@ -325,6 +335,7 @@ const AnimatedLandingPage: React.FC = () => {
             {/* You can add a rising sun animation or birds here */}
             <div className="w-24 h-24 bg-gradient-to-br from-yellow-300 to-orange-400 rounded-full shadow-2xl" />
           </div>
+          </>
         );
       
       case 'evening':
