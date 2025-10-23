@@ -28,7 +28,7 @@ const CloudLayer: React.FC<CloudLayerProps> = ({
       // Switch to full cloud after initial animation completes
       const timer = setTimeout(() => {
         setShowFullCloud(true);
-      }, delay + 3200); // 2500ms is the transition duration + buffer
+      }, delay + 2500); // Match exactly with transition duration
       return () => clearTimeout(timer);
     }
   }, [animationStarted, delay]);
@@ -39,22 +39,23 @@ const CloudLayer: React.FC<CloudLayerProps> = ({
       <>
         {srcLeft && (
           <div
-            className="absolute top-0 h-full transition-transform ease-out overflow-hidden"
+            className="absolute top-0 h-full transition-transform ease-out"
             style={{
               zIndex,
-              left: 0,
+              left: '50%',
+              marginLeft: `-${cloudWidth}px`, // Position left piece
               width: `${cloudWidth}px`,
               transitionDuration: "2500ms",
               transitionDelay: `${delay}ms`,
               transform: animationStarted
                 ? "translateX(0)"
-                : "translateX(-100%)",
+                : `translateX(-${cloudWidth}px)`, // Move full width off screen
             }}
           >
             <img
               src={srcLeft}
               alt="Clouds left"
-              className="h-full w-auto"
+              className="h-full"
               style={{ 
                 width: `${cloudWidth}px`,
                 objectFit: 'cover',
@@ -65,22 +66,22 @@ const CloudLayer: React.FC<CloudLayerProps> = ({
         )}
         {srcRight && (
           <div
-            className="absolute top-0 h-full transition-transform ease-out overflow-hidden"
+            className="absolute top-0 h-full transition-transform ease-out"
             style={{
               zIndex,
-              right: 0,
+              left: '50%',
               width: `${cloudWidth}px`,
               transitionDuration: "2500ms",
               transitionDelay: `${delay}ms`,
               transform: animationStarted
                 ? "translateX(0)"
-                : "translateX(100%)",
+                : `translateX(${cloudWidth}px)`, // Move full width off screen
             }}
           >
             <img
               src={srcRight}
               alt="Clouds right"
-              className="h-full w-auto"
+              className="h-full"
               style={{ 
                 width: `${cloudWidth}px`,
                 objectFit: 'cover',
@@ -99,44 +100,56 @@ const CloudLayer: React.FC<CloudLayerProps> = ({
       className="absolute top-0 left-0 w-full h-full overflow-hidden"
       style={{ zIndex }}
     >
-      {/* We need two instances of the cloud image for seamless looping */}
+      {/* Container for the scrolling clouds */}
       <div
-        className="absolute top-0 h-full flex"
+        className="absolute top-0 h-full"
         style={{
-          animation: `cloudScroll ${scrollSpeed}s linear infinite`,
-          width: `${cloudWidth * 2}px`, // Two cloud widths for seamless loop
           left: '50%',
-          transform: 'translateX(-50%)', // Center the clouds initially
+          marginLeft: `-${cloudWidth}px`, // Start position matches where split clouds end
+          width: `${cloudWidth * 3}px`, // Three widths for seamless loop (one extra for buffer)
+          animation: `cloudScroll-${zIndex} ${scrollSpeed}s linear infinite`,
         }}
       >
-        <img 
-          src={srcFull} 
-          alt="Scrolling clouds" 
-          className="h-full"
-          style={{
-            width: `${cloudWidth}px`,
-            objectFit: 'cover'
-          }}
-        />
-        <img
-          src={srcFull}
-          alt="Scrolling clouds duplicate"
-          className="h-full"
-          style={{
-            width: `${cloudWidth}px`,
-            objectFit: 'cover'
-          }}
-        />
+        {/* Three instances for completely seamless scrolling */}
+        <div className="flex h-full">
+          <img 
+            src={srcFull} 
+            alt="Scrolling clouds 1"
+            style={{
+              height: "100%",
+              width: `auto`,
+              objectFit: 'cover'
+            }}
+          />
+          <img
+            src={srcFull}
+            alt="Scrolling clouds 2"
+            style={{
+                height: "100%",
+              width: `auto`,
+              objectFit: 'cover'
+            }}
+          />
+          <img
+            src={srcFull}
+            alt="Scrolling clouds 3"
+            style={{
+                height: "100%",
+              width: `auto`,
+              objectFit: 'cover'
+            }}
+          />
+        </div>
       </div>
 
       {/* Add CSS animation via style tag */}
       <style jsx>{`
-        @keyframes cloudScroll {
+        @keyframes cloudScroll-${zIndex} {
           from {
-            transform: translateX(-50%);
+            transform: translateX(0);
           }
           to {
-            transform: translateX(calc(-50% - ${cloudWidth}px));
+            transform: translateX(-${cloudWidth}px);
           }
         }
       `}</style>
