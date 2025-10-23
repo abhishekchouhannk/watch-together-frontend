@@ -54,7 +54,7 @@ const CloudLayer: React.FC<CloudLayerProps> = ({
             <img
               src={srcLeft}
               alt="Clouds left"
-              className="w-full h-full object-cover"
+              className="w-[100vw] h-full"
             />
           </div>
         )}
@@ -74,7 +74,7 @@ const CloudLayer: React.FC<CloudLayerProps> = ({
             <img
               src={srcRight}
               alt="Clouds right"
-              className="w-full h-full object-cover"
+              className="w-[100vw] h-full"
             />
           </div>
         )}
@@ -99,12 +99,12 @@ const CloudLayer: React.FC<CloudLayerProps> = ({
         <img
           src={srcFull}
           alt="Scrolling clouds"
-          className="w-1/2 h-full object-cover"
+          className="w-1/2 h-full"
         />
         <img
           src={srcFull}
           alt="Scrolling clouds duplicate"
-          className="w-1/2 h-full object-cover"
+          className="w-1/2 h-full"
         />
       </div>
       
@@ -163,7 +163,7 @@ const AnimatedLandingPage: React.FC = () => {
         style={{ zIndex: 0 }}
       >
         <img
-          src="/assets/Clouds 1/1.png"
+          src="/assets/afternoon1/1-sky.png"
           alt="Sky"
           className="w-full h-full object-cover"
         />
@@ -204,9 +204,9 @@ const AnimatedLandingPage: React.FC = () => {
 
       {/* Layer 4: Far Clouds */}
       <CloudLayer
-        srcLeft="/assets/Clouds 1/2L.png"
-        srcRight="/assets/Clouds 1/2R.png"
-        srcFull="/assets/Clouds 1/2.png"
+        srcLeft="/assets/afternoon1/2L-far.png"
+        srcRight="/assets/afternoon1/2R-far.png"
+        srcFull="/assets/afternoon1/2-far.png"
         delay={500}
         animationStarted={animationStarted}
         zIndex={30}
@@ -215,9 +215,9 @@ const AnimatedLandingPage: React.FC = () => {
 
       {/* Layer 5: Near Clouds */}
       <CloudLayer
-        srcLeft="/assets/Clouds 1/4L.png"
-        srcRight="/assets/Clouds 1/4R.png"
-        srcFull="/assets/Clouds 1/4.png"
+        srcLeft="/assets/afternoon1/4L-near.png"
+        srcRight="/assets/afternoon1/4R-near.png"
+        srcFull="/assets/afternoon1/4-near.png"
         delay={1000}
         animationStarted={animationStarted}
         zIndex={40}
@@ -302,14 +302,14 @@ export default AnimatedLandingPage;
 // (Below is usage in main AnimatedPage.)
 // {/* Layer 4: Far Clouds */}
 //       <CloudLayer
-//         src="/assets/Clouds 1/2L.png"
+//         src="/assets/afternoon1/2L.png"
 //         side="left"
 //         delay={500}
 //         animationStarted={animationStarted}
 //         zIndex={30}
 //       />
 //       <CloudLayer
-//         src="/assets/Clouds 1/2R.png"
+//         src="/assets/afternoon1/2R.png"
 //         side="right"
 //         delay={500}
 //         animationStarted={animationStarted}
@@ -318,14 +318,14 @@ export default AnimatedLandingPage;
 
 //       {/* Layer 5: Near Clouds */}
 //       <CloudLayer
-//         src="/assets/Clouds 1/4L.png"
+//         src="/assets/afternoon1/4L.png"
 //         side="left"
 //         delay={1000}
 //         animationStarted={animationStarted}
 //         zIndex={40}
 //       />
 //       <CloudLayer
-//         src="/assets/Clouds 1/4R.png"
+//         src="/assets/afternoon1/4R.png"
 //         side="right"
 //         delay={1000}
 //         animationStarted={animationStarted}
