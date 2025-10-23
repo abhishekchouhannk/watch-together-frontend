@@ -317,9 +317,10 @@ const AnimatedLandingPage: React.FC = () => {
           {/* Twinkling Stars */}
           <TwinklingStars 
             zIndex={5} 
-            starCount={200} 
+            starCount={100} 
             animationStarted={animationStarted}
             density="sparse"
+            showShootingStars={true}
           />
           <div
             className={`absolute transition-all duration-[3000ms] ${
