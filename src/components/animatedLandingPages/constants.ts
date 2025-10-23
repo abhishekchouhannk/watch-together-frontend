@@ -79,13 +79,13 @@ const TIME_THEMES = {
 };
 
 // For testing purposes, you can set a fixed time of day here
-const timeForTesting = 'afternoon'; // Change to 'morning', 'afternoon', 'evening', 'night', null for testing
+const timeForTesting = 'morning'; // Change to 'morning', 'afternoon', 'evening', 'night', null for testing
 
 // Helper function to determine time of day based on hour
 const getTimeOfDay = (hour: number): keyof typeof TIME_THEMES => {
   if (hour >= 5 && hour < 12) return 'morning';
   if (hour >= 12 && hour < 17) return 'afternoon';
-  if (hour >= 17 && hour < 21) return 'evening';
+  if (hour >= 17 && hour < 21) return 'morning';
   return timeForTesting || 'night';
 };
 
