@@ -1,67 +1,18 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import AnimatedSun from "../landingPage/themeComponents/animatedSun";
-import TwinklingStars from "../landingPage/themeComponents/twinklingStars";
-import PixelSun from "../landingPage/themeComponents/pixelSun";
-import PixelMoon from "../landingPage/themeComponents/pixelMoon";
-import { TIME_THEMES, getTimeOfDay } from "../landingPage/constants";
-import CloudLayer from "../landingPage/themeComponents/clouds";
+import React from "react";
+import { useBackground } from "./BackgroundProvider";
+import { TIME_THEMES } from "./constants";
+import AnimatedSun from "./themeComponents/animatedSun";
+import TwinklingStars from "./themeComponents/twinklingStars";
+import PixelSun from "./themeComponents/pixelSun";
+import PixelMoon from "./themeComponents/pixelMoon";
+import CloudLayer from "./themeComponents/clouds";
+import DevTimeSelector from "./themeComponents/ThemeSelector";
 
-interface AuthBackgroundProps {
-  children: React.ReactNode;
-}
-
-const AuthBackground: React.FC<AuthBackgroundProps> = ({ children }) => {
-  const [animationStarted, setAnimationStarted] = useState(false);
-  const [blimpTrail, setBlimpTrail] = useState<Array<{ x: number; y: number }>>(
-    []
-  );
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const [selectedTheme, setSelectedTheme] = useState<
-    "morning" | "afternoon" | "evening" | "night"
-  >(() => {
-    const hour = new Date().getHours();
-    return getTimeOfDay(hour);
-  });
-
+const SharedBackground: React.FC = () => {
+  const { animationStarted, blimpTrail, selectedTheme, setSelectedTheme } = useBackground();
   const currentTheme = TIME_THEMES[selectedTheme];
-
-  // Update time every minute to catch theme changes
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 60000); // Update every minute
-
-    return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    setTimeout(() => setAnimationStarted(true), 200);
-
-    // Only animate blimp in afternoon
-    if (currentTheme.name === "afternoon") {
-      let progress = 0;
-      const trail: Array<{ x: number; y: number }> = [];
-
-      const blimpAnimation = setInterval(() => {
-        if (progress <= 100) {
-          const x = 10 + progress * 0.7;
-          const y = 40 + Math.sin(progress * 0.05) * 15 - progress * 0.2;
-
-          trail.push({ x, y });
-          if (trail.length > 30) trail.shift();
-
-          setBlimpTrail([...trail]);
-          progress += 0.5;
-        } else {
-          clearInterval(blimpAnimation);
-        }
-      }, 30);
-
-      return () => clearInterval(blimpAnimation);
-    }
-  }, [currentTheme]);
 
   // Render time-specific animated elements
   const renderAnimatedElement = () => {
@@ -148,9 +99,7 @@ const AuthBackground: React.FC<AuthBackgroundProps> = ({ children }) => {
   };
 
   return (
-    <div
-      className={`relative w-full min-h-screen overflow-hidden ${currentTheme.bgColor}`}
-    >
+    <div className={`fixed inset-0 w-full h-full overflow-hidden ${currentTheme.bgColor} -z-10`}>
       {/* Layer 1: Sky Background */}
       <div
         className={`absolute inset-0 transition-all duration-[1000ms] ${
@@ -168,7 +117,7 @@ const AuthBackground: React.FC<AuthBackgroundProps> = ({ children }) => {
       {/* Layer 2: Time-specific animated elements */}
       {renderAnimatedElement()}
 
-      {/* Layer 3: Static decorative element (if exists and not afternoon) */}
+      {/* Layer 3: Static decorative element */}
       {currentTheme.elementImage && currentTheme.name !== "afternoon" && (
         <div
           className={`absolute inset-0 transition-all duration-[2000ms] ${
@@ -206,15 +155,12 @@ const AuthBackground: React.FC<AuthBackgroundProps> = ({ children }) => {
         scrollSpeed={40}
       />
 
-      {/* Content Layer */}
-      <div
-        className="absolute inset-0 flex items-center justify-center"
-        style={{ zIndex: 50 }}
-      >
-        {children}
-      </div>
+      {/* Optional: Time indicator for testing
+      {process.env.NODE_ENV === 'development' && (
+        <DevTimeSelector currentTime={new Date()} onThemeChange={setSelectedTheme} />
+      )} */}
     </div>
   );
 };
 
-export default AuthBackground;
+export default SharedBackground;

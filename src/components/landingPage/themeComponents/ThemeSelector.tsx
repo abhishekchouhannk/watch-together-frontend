@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { TIME_THEMES, getTimeOfDay } from '../constants';
+import { useBackground } from "@/components/landingPage/BackgroundProvider";
 
 const TIME_EMOJIS: Record<keyof typeof TIME_THEMES, string> = {
   morning: '🌅',
@@ -10,7 +11,7 @@ const TIME_EMOJIS: Record<keyof typeof TIME_THEMES, string> = {
   night: '🌙',
 };
 
-export default function DevTimeSelector({
+export default function ThemeSelector({
   currentTime,
   onThemeChange,
 }: {
@@ -26,16 +27,18 @@ export default function DevTimeSelector({
     return TIME_THEMES[timeOfDay];
   }, [currentTime]);
 
-  const displayTheme = selectedTime ? TIME_THEMES[selectedTime] : currentTheme;
+  const { selectedTheme, setSelectedTheme } = useBackground();
+const displayTheme = TIME_THEMES[selectedTheme];
+
 
   return (
-    <div className="absolute top-4 right-4 z-50">
+    <div className="absolute top-4 right-4">
       <div className="relative inline-block text-left">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center justify-between bg-black/50 text-white px-3 py-1 rounded-lg text-sm w-48"
+          className="flex items-center justify-between bg-black/50 text-white px-3 py-1 rounded-lg text-sm w-32"
         >
-          {displayTheme.name} {TIME_EMOJIS[displayTheme.name as keyof typeof TIME_EMOJIS]}
+          <span className="capitalize">{displayTheme.name}</span> {TIME_EMOJIS[displayTheme.name as keyof typeof TIME_EMOJIS]}
           <span className="ml-2">{isOpen ? '▲' : '▼'}</span>
         </button>
 

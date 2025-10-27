@@ -171,12 +171,12 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSubmit }) => {
           <div className="flex-1">
             {mode === "login" ? (
               <p className="text-white/90 text-sm">
-                New arrival?{" "}
+                New User?{" "}
                 <button
                   onClick={() => toggleMode("register")}
-                  className="font-bold underline hover:text-white transition-colors"
+                  className="cursor-pointer font-bold underline hover:text-white transition-colors"
                 >
-                  Register here
+                  Register
                 </button>{" "}
                 to get started!
               </p>

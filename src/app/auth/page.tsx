@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import AuthBackground from "@/components/auth/AuthBackground";
 import AuthForm from "@/components/auth/AuthForm";
 
 const AuthPage: React.FC = () => {
@@ -20,11 +19,9 @@ const AuthPage: React.FC = () => {
   };
 
   return (
-    <AuthBackground>
-      <div className="w-full max-w-md px-4">
-        <AuthForm onSubmit={handleAuthSubmit} />
-      </div>
-    </AuthBackground>
+    <div className="relative w-full min-h-screen flex items-center justify-center p-4">
+      <AuthForm onSubmit={handleAuthSubmit} />
+    </div>
   );
 };
 
