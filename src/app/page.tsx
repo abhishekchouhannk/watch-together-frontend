@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect } from "react";
 import { socket } from "@/lib/socket";
 import AnimatedLandingPage from '@/components/animatedLandingPages/animatedLandingPage';
@@ -20,18 +18,18 @@ export default function HomePage() {
     console.log("Join Room clicked"); // replace with real navigation / logic
   };
 
-  // setting up a basic socket connection
-  useEffect(() => {
-    socket.connect();
+  // // setting up a basic socket connection
+  // useEffect(() => {
+  //   socket.connect();
 
-    socket.emit("join_room", { roomId: "123" });
+  //   socket.emit("join_room", { roomId: "123" });
 
-    socket.on("message", (data) => console.log(data));
+  //   socket.on("message", (data) => console.log(data));
 
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
+  //   return () => {
+  //     socket.disconnect();
+  //   };
+  // }, []);
 
   return (
     <AnimatedLandingPage />

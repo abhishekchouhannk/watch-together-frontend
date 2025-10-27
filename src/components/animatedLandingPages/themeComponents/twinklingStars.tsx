@@ -56,16 +56,16 @@ const TwinklingStars: React.FC<TwinklingStarsProps> = ({
         else if (rand < 0.3) type = "dim";
 
         const baseSize = type === "bright" 
-          ? Math.random() * 2 + 1.5
+          ? Math.random() * 2 + 1
           : type === "dim"
           ? Math.random() * 0.8 + 0.3
           : Math.random() * 1.5 + 0.5;
 
         const baseOpacity = type === "bright"
-          ? Math.random() * 0.2 + 0.8
+          ? Math.random() * 0.2 + 0.6
           : type === "dim"
           ? Math.random() * 0.3 + 0.3
-          : Math.random() * 0.4 + 0.6;
+          : Math.random() * 0.4 + 0.4;
 
         stars.push({
           x: Math.random() * canvas.width,

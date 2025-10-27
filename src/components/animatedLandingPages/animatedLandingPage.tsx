@@ -1,13 +1,17 @@
+"use client";
+
 import React, { useEffect, useState, useMemo } from "react";
 import AnimatedSun from "./themeComponents/animatedSun"; // For display in Afternoon
 import TwinklingStars from "./themeComponents/twinklingStars"; // For display in Morning/Night
+import AnimatedMoon from "./themeComponents/animatedMoon"; // For display in Night sky
 
 // import data, helper functions
 import { TIME_THEMES, getTimeOfDay } from "./constants";
 
 // import cloud animation component
 import CloudLayer from "./themeComponents/clouds";
-
+import DevTimeSelector from "./themeComponents/timeSelector";
+import PixelMoon from "./themeComponents/pixelMoon";
 
 const AnimatedLandingPage: React.FC = () => {
   const [animationStarted, setAnimationStarted] = useState(false);
@@ -15,13 +19,14 @@ const AnimatedLandingPage: React.FC = () => {
     []
   );
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [selectedTheme, setSelectedTheme] = useState<
+    "morning" | "afternoon" | "evening" | "night"
+  >(() => {
+    const hour = new Date().getHours();
+    return getTimeOfDay(hour);
+  });
 
-  // Determine current theme based on time
-  const currentTheme = useMemo(() => {
-    const hour = currentTime.getHours();
-    const timeOfDay = getTimeOfDay(hour);
-    return TIME_THEMES[timeOfDay];
-  }, [currentTime]);
+  const currentTheme = TIME_THEMES[selectedTheme];
 
   // useEffect(() => {
   //   console.log("Current hour:", currentTime.getHours());
@@ -114,7 +119,7 @@ const AnimatedLandingPage: React.FC = () => {
             {/* Twinkling Stars */}
             <TwinklingStars
               zIndex={5}
-              starCount={1000}
+              starCount={700}
               animationStarted={animationStarted}
               density="sparse"
               showShootingStars={true}
@@ -138,14 +143,32 @@ const AnimatedLandingPage: React.FC = () => {
 
       case "evening":
         // Add evening-specific animations
-        return null; // Will use static element image
+        return (
+          <>
+            <TwinklingStars
+              zIndex={5}
+              starCount={700}
+              animationStarted={animationStarted}
+              density="sparse"
+              showShootingStars={true}
+            />
+          </>
+        );
 
       case "night":
         // Add night-specific animations (e.g., twinkling stars)
         return (
-          <div className="absolute inset-0" style={{ zIndex: 5 }}>
-            {/* Add stars or moon animation here */}
-          </div>
+          <>
+            <TwinklingStars
+              zIndex={5}
+              starCount={1000}
+              animationStarted={animationStarted}
+              density="sparse"
+              showShootingStars={true}
+            />
+            {/* <AnimatedMoon zIndex={15} /> */}
+            < PixelMoon zIndex={20} />
+          </>
         );
 
       default:
@@ -198,7 +221,7 @@ const AnimatedLandingPage: React.FC = () => {
         delay={500}
         animationStarted={animationStarted}
         zIndex={30}
-        scrollSpeed={10}
+        scrollSpeed={80}
       />
 
       {/* Layer 5: Near Clouds */}
@@ -209,7 +232,7 @@ const AnimatedLandingPage: React.FC = () => {
         delay={1000}
         animationStarted={animationStarted}
         zIndex={40}
-        scrollSpeed={5}
+        scrollSpeed={40}
       />
 
       {/* UI Content */}
@@ -232,12 +255,12 @@ const AnimatedLandingPage: React.FC = () => {
           </h1>
           <p
             className={`text-lg md:text-2xl mb-10 drop-shadow-lg max-w-2xl mx-auto ${
-              currentTheme.name === "morning" || currentTheme.name === "evening"
+              currentTheme.name === "morning"
                 ? "text-gray-700/90"
                 : "text-white/90"
             }`}
           >
-            Experience movies with friends, anywhere in the world
+            {currentTheme.motto}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
@@ -255,15 +278,9 @@ const AnimatedLandingPage: React.FC = () => {
       </div>
 
       {/* Optional: Time indicator for testing */}
-      {process.env.NODE_ENV === "development" &&
-        typeof window !== "undefined" && (
-          <div
-            className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1 rounded-lg text-sm"
-            style={{ zIndex: 100 }}
-          >
-            {currentTheme.name} ({currentTime.toLocaleTimeString()})
-          </div>
-        )}
+      {process.env.NODE_ENV === 'development' && (
+        <DevTimeSelector currentTime={currentTime} onThemeChange={setSelectedTheme} />
+      )}
     </div>
   );
 };

@@ -2,6 +2,7 @@
 const TIME_THEMES = {
   morning: {
     name: 'morning',
+    motto: 'Start your day watching together, anywhere.',
     bgColor: 'bg-gradient-to-b from-orange-200 to-blue-300',
     skyImage: '/assets/morning1/1-sky.png',
     farClouds: {
@@ -21,6 +22,7 @@ const TIME_THEMES = {
   },
   afternoon: {
     name: 'afternoon',
+    motto: 'Take a break and watch together, anywhere.',
     bgColor: 'bg-sky-300',
     skyImage: '/assets/afternoon1/1-sky.png',
     farClouds: {
@@ -40,37 +42,39 @@ const TIME_THEMES = {
   },
   evening: {
     name: 'evening',
+    motto: 'Unwind and watch together, anywhere.',
     bgColor: 'bg-gradient-to-b from-purple-400 via-pink-300 to-orange-300',
-    skyImage: '/assets/Evening/1-sky.png',
+    skyImage: '/assets/evening1/1-sky.png',
     farClouds: {
-      left: '/assets/Evening/2L-far.png',
-      right: '/assets/Evening/2R-far.png',
-      full: '/assets/Evening/2-far.png',
+      left: '/assets/evening1/2L-far.png',
+      right: '/assets/evening1/2R-far.png',
+      full: '/assets/evening1/2-far.png',
     },
-    elementImage: '/assets/Evening/3-element.png', // Could be flying birds, etc.
+    elementImage: '/assets/evening1/element.png', // Could be flying birds, etc.
     nearClouds: {
-      left: '/assets/Evening/4L-near.png',
-      right: '/assets/Evening/4R-near.png',
-      full: '/assets/Evening/4-near.png',
+      left: '/assets/evening1/3L-near.png',
+      right: '/assets/evening1/3R-near.png',
+      full: '/assets/evening1/3-near.png',
     },
-    textColor: 'text-purple-900',
+    textColor: 'text-pink-500',
     buttonPrimary: 'bg-purple-600 hover:bg-purple-700 text-white',
     buttonSecondary: 'bg-purple-100/80 hover:bg-purple-200/90 text-purple-900',
   },
   night: {
     name: 'night',
+    motto : 'Movie nights made simple — together, anywhere.',
     bgColor: 'bg-gradient-to-b from-indigo-900 to-blue-900',
-    skyImage: '/assets/Night/1-sky.png',
+    skyImage: '/assets/night1/1-sky.png',
     farClouds: {
-      left: '/assets/Night/2L-far.png',
-      right: '/assets/Night/2R-far.png',
-      full: '/assets/Night/2-far.png',
+      left: '/assets/night1/2L-far.png',
+      right: '/assets/night1/2R-far.png',
+      full: '/assets/night1/2-far.png',
     },
-    elementImage: '/assets/Night/3-element.png', // Could be stars, moon, etc.
+    elementImage: '/assets/night1/element.png', // Could be stars, moon, etc.
     nearClouds: {
-      left: '/assets/Night/4L-near.png',
-      right: '/assets/Night/4R-near.png',
-      full: '/assets/Night/4-near.png',
+      left: '/assets/night1/3L-near.png',
+      right: '/assets/night1/3R-near.png',
+      full: '/assets/night1/3-near.png',
     },
     textColor: 'text-white',
     buttonPrimary: 'bg-indigo-500 hover:bg-indigo-600 text-white',
@@ -79,14 +83,25 @@ const TIME_THEMES = {
 };
 
 // For testing purposes, you can set a fixed time of day here
-const timeForTesting = 'morning'; // Change to 'morning', 'afternoon', 'evening', 'night', null for testing
+const timeForTesting = 'evening'; // Change to 'morning', 'afternoon', 'evening', 'night', null for testing
 
 // Helper function to determine time of day based on hour
-const getTimeOfDay = (hour: number): keyof typeof TIME_THEMES => {
-  if (hour >= 5 && hour < 12) return 'morning';
-  if (hour >= 12 && hour < 17) return 'afternoon';
-  if (hour >= 17 && hour < 21) return 'morning';
-  return timeForTesting || 'night';
+const getTimeOfDay = (hour?: number): keyof typeof TIME_THEMES => {
+  // If testing with a fixed time, return that
+  // if (timeForTesting) return timeForTesting as keyof typeof TIME_THEMES;
+
+  // If hour not provided, use current hour
+  const currentHour = hour ?? new Date().getHours();
+
+  if (currentHour >= 4 && currentHour < 12) {
+    return 'morning';
+  } else if (currentHour >= 12 && currentHour < 16) {
+    return 'afternoon';
+  } else if (currentHour >= 16 && currentHour < 20) {
+    return 'evening';
+  } else {
+    return 'night';
+  }
 };
 
 export { TIME_THEMES, getTimeOfDay };
