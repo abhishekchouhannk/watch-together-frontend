@@ -19,7 +19,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSubmit }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isError, setIsError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [message, setMessage] = useState(""); // Used for both error and success messages
   const [isLoading, setIsLoading] = useState(false);
 
   // Clear error state after 3.5 seconds
@@ -27,27 +28,40 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSubmit }) => {
     if (isError) {
       const timer = setTimeout(() => {
         setIsError(false);
-        setErrorMessage("");
+        setMessage("");
       }, 3500);
       return () => clearTimeout(timer);
     }
   }, [isError]);
 
-  const toggleMode = () => {
+  // Clear success state after 3.5 seconds
+  useEffect(() => {
+    if (isSuccess) {
+      const timer = setTimeout(() => {
+        setIsSuccess(false);
+        setMessage("");
+      }, 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [isSuccess]);
+
+   const toggleMode = () => {
     setMode(mode === "login" ? "register" : "login");
-    // Clear form and errors when switching
+    // Clear form and messages when switching
     setEmail("");
     setUsername("");
     setPassword("");
     setIsError(false);
-    setErrorMessage("");
+    setIsSuccess(false);
+    setMessage("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setIsError(false);
-    setErrorMessage("");
+    setIsSuccess(false);
+    setMessage("");
 
     try {
       const endpoint =
@@ -71,11 +85,12 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSubmit }) => {
       const data = await response.json();
 
       if (!response.ok) {
-        console.log(data);
-        throw new Error(data || "Authentication failed");
+        throw new Error(data.message || "Authentication failed");
       }
 
-      // Success! Handle the response (e.g., save token, redirect)
+      // Success! Display success message from server
+      setIsSuccess(true);
+      setMessage(data.message || "Authentication successful!");
       console.log("Authentication successful:", data);
       
       // If custom onSubmit handler is provided
@@ -83,12 +98,14 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSubmit }) => {
         await onSubmit(body);
       }
 
-      // You can add redirect logic here
-      // window.location.href = '/dashboard';
+      // You can add redirect logic here (after a delay to show success message)
+      // setTimeout(() => {
+      //   window.location.href = '/dashboard';
+      // }, 2000);
       
     } catch (error: any) {
       setIsError(true);
-      setErrorMessage(error.message || "An error occurred. Please try again.");
+      setMessage(error.message || "An error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -160,22 +177,34 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSubmit }) => {
             )}
           </div>
 
-          {/* Pixel Face */}
+           {/* Pixel Face */}
           <div className="ml-4">
-            <PixelFace isError={isError} />
+            <PixelFace 
+              state={isError ? "error" : isSuccess ? "success" : "neutral"} 
+            />
           </div>
         </div>
 
         {/* Error Message */}
-        {isError && errorMessage && (
+        {isError && message && (
           <div
             className="bg-red-500/20 border border-red-500/50 text-red-100 px-4 py-2 rounded-lg mb-4
                        animate-shake text-sm"
           >
-            {errorMessage}
+            {message}
           </div>
         )}
-      </div>
+
+        {/* Success Message */}
+        {isSuccess && message && (
+          <div
+            className="bg-green-500/20 border border-green-500/50 text-green-100 px-4 py-2 rounded-lg mb-4
+                       animate-slideDown text-sm"
+          >
+            {message}
+          </div>
+        )}
+        </ div>
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
