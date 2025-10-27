@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import PixelFace from "./PixelFace";
 
-type AuthMode = "login" | "register";
+type AuthMode = "login" | "register" | "forgotPassword";
 
 interface AuthFormProps {
   onSubmit?: (data: {
@@ -45,8 +45,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSubmit }) => {
     }
   }, [isSuccess]);
 
-   const toggleMode = () => {
-    setMode(mode === "login" ? "register" : "login");
+   const toggleMode = (newMode: AuthMode) => {
+    setMode(newMode);
     // Clear form and messages when switching
     setEmail("");
     setUsername("");
@@ -64,15 +64,19 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSubmit }) => {
     setMessage("");
 
     try {
-      const endpoint =
-        mode === "login"
-          ? "http://localhost:5000/api/auth/login"
-          : "http://localhost:5000/api/auth/register";
+      let endpoint = "";
+      let body: any = {};
 
-      const body =
-        mode === "login"
-          ? { email, password }
-          : { email, username, password };
+      if (mode === "login") {
+        endpoint = "http://localhost:5000/api/auth/login";
+        body = { email, password };
+      } else if (mode === "register") {
+        endpoint = "http://localhost:5000/api/auth/register";
+        body = { email, username, password };
+      } else if (mode === "forgotPassword") {
+        endpoint = "http://localhost:5000/api/auth/forgot-password";
+        body = { email };
+      }
 
       const response = await fetch(endpoint, {
         method: "POST",
@@ -85,16 +89,16 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSubmit }) => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Authentication failed");
+        throw new Error(data.message || "Request failed");
       }
 
       // Success! Display success message from server
       setIsSuccess(true);
-      setMessage(data.message || "Authentication successful!");
-      console.log("Authentication successful:", data);
+      setMessage(data.message || "Request successful!");
+      console.log("Request successful:", data);
       
-      // If custom onSubmit handler is provided
-      if (onSubmit) {
+      // If custom onSubmit handler is provided (for login/register only)
+      if (onSubmit && mode !== "forgotPassword") {
         await onSubmit(body);
       }
 
@@ -117,36 +121,49 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSubmit }) => {
                  border border-white/20 transition-all duration-500 transform
                  hover:shadow-3xl"
     >
-      {/* Header with Toggle */}
+       {/* Header with Toggle */}
       <div className="mb-6">
-        <div className="flex justify-center gap-2 mb-6">
-          <button
-            onClick={() => mode !== "login" && toggleMode()}
-            className={`
-              px-6 py-2 rounded-full font-semibold transition-all duration-300
-              ${
-                mode === "login"
-                  ? "bg-white text-gray-900 shadow-lg"
-                  : "bg-white/20 text-white hover:bg-white/30"
-              }
-            `}
-          >
-            Login
-          </button>
-          <button
-            onClick={() => mode !== "register" && toggleMode()}
-            className={`
-              px-6 py-2 rounded-full font-semibold transition-all duration-300
-              ${
-                mode === "register"
-                  ? "bg-white text-gray-900 shadow-lg"
-                  : "bg-white/20 text-white hover:bg-white/30"
-              }
-            `}
-          >
-            Register
-          </button>
-        </div>
+        {mode !== "forgotPassword" && (
+          <div className="flex justify-center gap-2 mb-6">
+            <button
+              onClick={() => mode !== "login" && toggleMode("login")}
+              className={`
+                px-6 py-2 rounded-full font-semibold transition-all duration-300
+                ${
+                  mode === "login"
+                    ? "bg-white text-gray-900 shadow-lg"
+                    : "bg-white/20 text-white hover:bg-white/30"
+                }
+              `}
+            >
+              Login
+            </button>
+            <button
+              onClick={() => mode !== "register" && toggleMode("register")}
+              className={`
+                px-6 py-2 rounded-full font-semibold transition-all duration-300
+                ${
+                  mode === "register"
+                    ? "bg-white text-gray-900 shadow-lg"
+                    : "bg-white/20 text-white hover:bg-white/30"
+                }
+              `}
+            >
+              Register
+            </button>
+          </div>
+        )}
+
+        {mode === "forgotPassword" && (
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-white text-center mb-2">
+              Reset Password
+            </h2>
+            <p className="text-white/70 text-sm text-center">
+              Enter your email to receive a password reset link
+            </p>
+          </div>
+        )}
 
         {/* Face and Helper Text Container */}
         <div className="flex items-center justify-between mb-4">
@@ -156,23 +173,33 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSubmit }) => {
               <p className="text-white/90 text-sm">
                 New arrival?{" "}
                 <button
-                  onClick={toggleMode}
+                  onClick={() => toggleMode("register")}
                   className="font-bold underline hover:text-white transition-colors"
                 >
                   Register here
                 </button>{" "}
                 to get started!
               </p>
-            ) : (
+            ) : mode === "register" ? (
               <p className="text-white/90 text-sm">
                 Already have an account?{" "}
                 <button
-                  onClick={toggleMode}
+                  onClick={() => toggleMode("login")}
                   className="font-bold underline hover:text-white transition-colors"
                 >
                   Click to login
                 </button>
                 .
+              </p>
+            ) : (
+              <p className="text-white/90 text-sm">
+                Remember your password?{" "}
+                <button
+                  onClick={() => toggleMode("login")}
+                  className="font-bold underline hover:text-white transition-colors"
+                >
+                  Back to login
+                </button>
               </p>
             )}
           </div>
@@ -251,27 +278,29 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSubmit }) => {
           </div>
         )}
 
-        {/* Password Field */}
-        <div>
-          <label
-            htmlFor="password"
-            className="block text-white/90 text-sm font-medium mb-2"
-          >
-            Password
-          </label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full px-4 py-3 rounded-lg bg-white/20 border border-white/30
-                     text-white placeholder-white/50 focus:outline-none focus:ring-2
-                     focus:ring-white/50 focus:border-transparent transition-all"
-            placeholder="••••••••"
-            disabled={isLoading}
-          />
-        </div>
+        {/* Password Field (Login and Register only) */}
+        {mode !== "forgotPassword" && (
+          <div>
+            <label
+              htmlFor="password"
+              className="block text-white/90 text-sm font-medium mb-2"
+            >
+              Password
+            </label>
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full px-4 py-3 rounded-lg bg-white/20 border border-white/30
+                       text-white placeholder-white/50 focus:outline-none focus:ring-2
+                       focus:ring-white/50 focus:border-transparent transition-all"
+              placeholder="••••••••"
+              disabled={isLoading}
+            />
+          </div>
+        )}
 
         {/* Submit Button */}
         <button
@@ -308,8 +337,10 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSubmit }) => {
             </span>
           ) : mode === "login" ? (
             "Sign In"
-          ) : (
+          ) : mode === "register" ? (
             "Create Account"
+          ) : (
+            "Send Reset Link"
           )}
         </button>
       </form>
@@ -317,7 +348,10 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSubmit }) => {
       {/* Additional Options */}
       {mode === "login" && (
         <div className="mt-4 text-center">
-          <button className="text-white/70 hover:text-white text-sm transition-colors">
+          <button 
+            onClick={() => toggleMode("forgotPassword")}
+            className="text-white/70 hover:text-white text-sm transition-colors"
+          >
             Forgot password?
           </button>
         </div>
