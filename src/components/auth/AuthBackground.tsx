@@ -1,24 +1,18 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
-import AnimatedSun from "./themeComponents/animatedSun"; // For display in Afternoon
-import TwinklingStars from "./themeComponents/twinklingStars"; // For display in Morning/Night
-import AnimatedMoon from "./themeComponents/animatedMoon"; // For display in Night sky
-import PixelSun from "./themeComponents/pixelSun";
+import React, { useEffect, useState } from "react";
+import AnimatedSun from "../animatedLandingPages/themeComponents/animatedSun";
+import TwinklingStars from "../animatedLandingPages/themeComponents/twinklingStars";
+import PixelSun from "../animatedLandingPages/themeComponents/pixelSun";
+import PixelMoon from "../animatedLandingPages/themeComponents/pixelMoon";
+import { TIME_THEMES, getTimeOfDay } from "../animatedLandingPages/constants";
+import CloudLayer from "../animatedLandingPages/themeComponents/clouds";
 
-// import data, helper functions
-import { TIME_THEMES, getTimeOfDay } from "./constants";
+interface AuthBackgroundProps {
+  children: React.ReactNode;
+}
 
-// import cloud animation component
-import CloudLayer from "./themeComponents/clouds";
-import DevTimeSelector from "./themeComponents/timeSelector";
-import PixelMoon from "./themeComponents/pixelMoon";
-import { useRouter } from "next/navigation";
-
-const AnimatedLandingPage: React.FC = () => {
-
-  const router = useRouter();
-
+const AuthBackground: React.FC<AuthBackgroundProps> = ({ children }) => {
   const [animationStarted, setAnimationStarted] = useState(false);
   const [blimpTrail, setBlimpTrail] = useState<Array<{ x: number; y: number }>>(
     []
@@ -32,13 +26,6 @@ const AnimatedLandingPage: React.FC = () => {
   });
 
   const currentTheme = TIME_THEMES[selectedTheme];
-
-  // useEffect(() => {
-  //   console.log("Current hour:", currentTime.getHours());
-  //   console.log("Time of day:", getTimeOfDay(currentTime.getHours()));
-  //   console.log("Selected theme:", currentTheme.name);
-  //   console.log("Sky image path:", currentTheme.skyImage);
-  // }, [currentTheme, currentTime]);
 
   // Update time every minute to catch theme changes
   useEffect(() => {
@@ -82,10 +69,7 @@ const AnimatedLandingPage: React.FC = () => {
       case "afternoon":
         return (
           <>
-            {/* Animated Sun for afternoon */}
             <AnimatedSun zIndex={10} />
-
-            {/* Animated Blimp for afternoon */}
             <svg
               className="absolute inset-0 w-full h-full pointer-events-none"
               style={{ zIndex: 20 }}
@@ -118,10 +102,8 @@ const AnimatedLandingPage: React.FC = () => {
         );
 
       case "morning":
-        // Add morning-specific animations (e.g., rising sun)
         return (
           <>
-            {/* Twinkling Stars */}
             <TwinklingStars
               zIndex={5}
               starCount={700}
@@ -129,26 +111,11 @@ const AnimatedLandingPage: React.FC = () => {
               density="sparse"
               showShootingStars={true}
             />
-            < PixelSun />
-            {/* <div
-              className={`absolute transition-all duration-[3000ms] ${
-                animationStarted ? "opacity-100" : "opacity-0"
-              }`}
-              style={{
-                zIndex: 15,
-                top: animationStarted ? "10%" : "50%",
-                left: "80%",
-                transform: "translateX(-50%)",
-              }}
-            > */}
-              {/* You can add a rising sun animation or birds here */}
-              {/* <div className="w-24 h-24 bg-gradient-to-br from-yellow-300 to-orange-400 rounded-full shadow-2xl" />
-            </div> */}
+            <PixelSun />
           </>
         );
 
       case "evening":
-        // Add evening-specific animations
         return (
           <>
             <TwinklingStars
@@ -162,7 +129,6 @@ const AnimatedLandingPage: React.FC = () => {
         );
 
       case "night":
-        // Add night-specific animations (e.g., twinkling stars)
         return (
           <>
             <TwinklingStars
@@ -172,8 +138,7 @@ const AnimatedLandingPage: React.FC = () => {
               density="sparse"
               showShootingStars={true}
             />
-            {/* <AnimatedMoon zIndex={15} /> */}
-            < PixelMoon zIndex={20} />
+            <PixelMoon zIndex={20} />
           </>
         );
 
@@ -184,7 +149,7 @@ const AnimatedLandingPage: React.FC = () => {
 
   return (
     <div
-      className={`relative w-full h-screen overflow-hidden ${currentTheme.bgColor}`}
+      className={`relative w-full min-h-screen overflow-hidden ${currentTheme.bgColor}`}
     >
       {/* Layer 1: Sky Background */}
       <div
@@ -241,55 +206,15 @@ const AnimatedLandingPage: React.FC = () => {
         scrollSpeed={40}
       />
 
-      {/* UI Content */}
+      {/* Content Layer */}
       <div
         className="absolute inset-0 flex items-center justify-center"
         style={{ zIndex: 50 }}
       >
-        <div
-          className={`text-center px-6 transition-all duration-1000 transform ${
-            animationStarted
-              ? "opacity-100 translate-y-0"
-              : "opacity-0 translate-y-10"
-          }`}
-          style={{ transitionDelay: "3000ms" }}
-        >
-          <h1
-            className={`text-5xl md:text-7xl font-bold mb-6 drop-shadow-2xl ${currentTheme.textColor}`}
-          >
-            Watch Together
-          </h1>
-          <p
-            className={`text-lg md:text-2xl mb-10 drop-shadow-lg max-w-2xl mx-auto ${
-              currentTheme.name === "morning"
-                ? "text-gray-700/90"
-                : "text-white/90"
-            }`}
-          >
-            {currentTheme.motto}
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-            onClick={() => router.push('/auth')}
-              className={`px-8 py-4 rounded-full font-semibold transform hover:scale-105 transition-all shadow-xl ${currentTheme.buttonPrimary}`}
-            >
-              Start Watching
-            </button>
-            <button
-              className={`backdrop-blur px-8 py-4 rounded-full font-semibold transform hover:scale-105 transition-all ${currentTheme.buttonSecondary}`}
-            >
-              Learn More
-            </button>
-          </div>
-        </div>
+        {children}
       </div>
-
-      {/* Optional: Time indicator for testing */}
-      {process.env.NODE_ENV === 'development' && (
-        <DevTimeSelector currentTime={currentTime} onThemeChange={setSelectedTheme} />
-      )}
     </div>
   );
 };
 
-export default AnimatedLandingPage;
+export default AuthBackground;
