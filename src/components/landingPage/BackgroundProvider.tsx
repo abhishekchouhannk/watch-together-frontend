@@ -7,10 +7,14 @@ interface BackgroundContextType {
   animationStarted: boolean;
   blimpTrail: Array<{ x: number; y: number }>;
   selectedTheme: "morning" | "afternoon" | "evening" | "night";
-  setSelectedTheme: React.Dispatch<React.SetStateAction<"morning" | "afternoon" | "evening" | "night">>;
+  setSelectedTheme: React.Dispatch<
+    React.SetStateAction<"morning" | "afternoon" | "evening" | "night">
+  >;
 }
 
-const BackgroundContext = createContext<BackgroundContextType | undefined>(undefined);
+const BackgroundContext = createContext<BackgroundContextType | undefined>(
+  undefined
+);
 
 export const useBackground = () => {
   const context = useContext(BackgroundContext);
@@ -20,13 +24,21 @@ export const useBackground = () => {
   return context;
 };
 
-export const BackgroundProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const BackgroundProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [animationStarted, setAnimationStarted] = useState(false);
-  const [blimpTrail, setBlimpTrail] = useState<Array<{ x: number; y: number }>>([]);
-  const [selectedTheme, setSelectedTheme] = useState<"morning" | "afternoon" | "evening" | "night">(() => {
+  const [blimpTrail, setBlimpTrail] = useState<Array<{ x: number; y: number }>>(
+    []
+  );
+  const [selectedTheme, setSelectedTheme] = useState<
+    "morning" | "afternoon" | "evening" | "night"
+  >("night"); // stable default
+
+  useEffect(() => {
     const hour = new Date().getHours();
-    return getTimeOfDay(hour);
-  });
+    setSelectedTheme(getTimeOfDay(hour));
+  }, []);
 
   // Start animations only once on mount
   useEffect(() => {

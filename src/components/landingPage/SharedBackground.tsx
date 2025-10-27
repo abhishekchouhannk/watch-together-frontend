@@ -99,7 +99,10 @@ const SharedBackground: React.FC = () => {
   };
 
   return (
-    <div className={`fixed inset-0 w-full h-full overflow-hidden ${currentTheme.bgColor} -z-10`}>
+    <div 
+      className={`fixed inset-0 w-full h-[100dvh] overflow-hidden ${currentTheme.bgColor} -z-10`}
+      style={{ transform: "translateZ(0)" }}  
+    >
       {/* Layer 1: Sky Background */}
       <div
         className={`absolute inset-0 transition-all duration-[1000ms] ${

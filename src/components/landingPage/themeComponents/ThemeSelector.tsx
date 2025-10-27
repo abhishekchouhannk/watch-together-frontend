@@ -1,5 +1,8 @@
 'use client';
 
+// Utility
+import { capitalize } from '@/lib/utils'
+
 import { useState, useMemo } from 'react';
 import { TIME_THEMES, getTimeOfDay } from '../constants';
 import { useBackground } from "@/components/landingPage/BackgroundProvider";
@@ -56,7 +59,7 @@ const displayTheme = TIME_THEMES[selectedTheme];
                   }}
                   className="px-3 py-2 cursor-pointer hover:bg-black/40 transition-colors"
                 >
-                  {key} {TIME_EMOJIS[key as keyof typeof TIME_THEMES]}
+                  {capitalize(key)} {TIME_EMOJIS[key as keyof typeof TIME_THEMES]}
                 </div>
               ))}
           </div>

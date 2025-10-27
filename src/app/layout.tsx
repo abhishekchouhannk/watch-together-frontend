@@ -17,7 +17,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`text-white min-h-screen antialiased`}
+        className={`text-white min-h-[100dvh] overflow-hidden flex flex-col antialiased`}
       >
         <BackgroundProvider>
           {/* Persistent Background */}

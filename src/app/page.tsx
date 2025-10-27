@@ -11,7 +11,7 @@ const HomePage: React.FC = () => {
   const currentTheme = TIME_THEMES[selectedTheme];
 
   return (
-    <div className="relative w-full h-screen flex items-center justify-center">
+    <div className="relative w-full h-[100dvh] flex items-center justify-center">
       <div
         className={`text-center px-6 transition-all duration-1000 transform ${
           animationStarted
