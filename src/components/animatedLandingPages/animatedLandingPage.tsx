@@ -4,6 +4,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import AnimatedSun from "./themeComponents/animatedSun"; // For display in Afternoon
 import TwinklingStars from "./themeComponents/twinklingStars"; // For display in Morning/Night
 import AnimatedMoon from "./themeComponents/animatedMoon"; // For display in Night sky
+import PixelSun from "./themeComponents/pixelSun";
 
 // import data, helper functions
 import { TIME_THEMES, getTimeOfDay } from "./constants";
@@ -124,7 +125,8 @@ const AnimatedLandingPage: React.FC = () => {
               density="sparse"
               showShootingStars={true}
             />
-            <div
+            < PixelSun />
+            {/* <div
               className={`absolute transition-all duration-[3000ms] ${
                 animationStarted ? "opacity-100" : "opacity-0"
               }`}
@@ -134,10 +136,10 @@ const AnimatedLandingPage: React.FC = () => {
                 left: "80%",
                 transform: "translateX(-50%)",
               }}
-            >
+            > */}
               {/* You can add a rising sun animation or birds here */}
-              <div className="w-24 h-24 bg-gradient-to-br from-yellow-300 to-orange-400 rounded-full shadow-2xl" />
-            </div>
+              {/* <div className="w-24 h-24 bg-gradient-to-br from-yellow-300 to-orange-400 rounded-full shadow-2xl" />
+            </div> */}
           </>
         );
 

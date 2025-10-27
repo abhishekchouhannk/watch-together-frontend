@@ -13,8 +13,8 @@ interface PixelMoonProps {
 }
 
 const PixelMoon: React.FC<PixelMoonProps> = ({
-  size = 70,
-  pixelSize = 4,
+  size = 100,
+  pixelSize = 3,
   color = "#f5f3ce",
   top = "20%",
   left = "40%",

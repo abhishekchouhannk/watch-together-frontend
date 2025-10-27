@@ -70,7 +70,7 @@ const TIME_THEMES = {
       right: '/assets/night1/2R-far.png',
       full: '/assets/night1/2-far.png',
     },
-    elementImage: '/assets/night1/element.png', // Could be stars, moon, etc.
+    elementImage: null, // Could be stars, moon, etc.
     nearClouds: {
       left: '/assets/night1/3L-near.png',
       right: '/assets/night1/3R-near.png',
