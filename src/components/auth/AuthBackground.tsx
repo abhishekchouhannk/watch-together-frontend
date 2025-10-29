@@ -5,7 +5,7 @@ import AnimatedSun from "../landingPage/themeComponents/animatedSun";
 import TwinklingStars from "../landingPage/themeComponents/twinklingStars";
 import PixelSun from "../landingPage/themeComponents/pixelSun";
 import PixelMoon from "../landingPage/themeComponents/pixelMoon";
-import { TIME_THEMES, getTimeOfDay } from "../landingPage/constants";
+import { TIME_THEMES, getTimeOfDay } from "../landingPage/ThemeConstants";
 import CloudLayer from "../landingPage/themeComponents/clouds";
 
 interface AuthBackgroundProps {

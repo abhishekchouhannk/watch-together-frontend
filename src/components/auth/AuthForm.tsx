@@ -11,9 +11,10 @@ interface AuthFormProps {
     password: string;
     username?: string;
   }) => Promise<void>;
+  themeTextColor?: string
 }
 
-const AuthForm: React.FC<AuthFormProps> = ({ onSubmit }) => {
+const AuthForm: React.FC<AuthFormProps> = ({ onSubmit, themeTextColor }) => {
   const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
@@ -22,6 +23,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSubmit }) => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [message, setMessage] = useState(""); // Used for both error and success messages
   const [isLoading, setIsLoading] = useState(false);
+
+  const textColor = themeTextColor || 'text-white';
 
   // Clear error state after 3.5 seconds
   useEffect(() => {
@@ -202,13 +205,6 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSubmit }) => {
                 </button>
               </p>
             )}
-          </div>
-
-           {/* Pixel Face */}
-          <div className="ml-4">
-            <PixelFace 
-              state={isError ? "error" : isSuccess ? "success" : "neutral"} 
-            />
           </div>
         </div>
 

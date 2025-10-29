@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { getTimeOfDay } from "./constants";
+import { getTimeOfDay } from "./ThemeConstants";
 
 interface BackgroundContextType {
   animationStarted: boolean;

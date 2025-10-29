@@ -3,7 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { useBackground } from "./BackgroundProvider";
-import { TIME_THEMES } from "./constants";
+import { TIME_THEMES } from "./ThemeConstants";
 
 const LandingPageContent: React.FC = () => {
   const router = useRouter();

@@ -3,7 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { useBackground } from "@/components/landingPage/BackgroundProvider";
-import { TIME_THEMES } from "@/components/landingPage/constants";
+import { TIME_THEMES } from "@/components/landingPage/ThemeConstants";
 
 const HomePage: React.FC = () => {
   const router = useRouter();
@@ -36,7 +36,7 @@ const HomePage: React.FC = () => {
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
-            onClick={() => router.push('/auth')}
+            onClick={() => router.push('/auth?from=landing')}
             className={`px-8 py-4 rounded-full font-semibold transform hover:scale-105 transition-all shadow-xl ${currentTheme.buttonPrimary}`}
           >
             Start Watching
