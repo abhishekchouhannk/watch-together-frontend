@@ -1,7 +1,7 @@
 'use client';
 
 // Utility
-import { capitalize } from '@/lib/utils'
+import { capitalize } from '@/utils/util-Functions'
 
 import { useState, useMemo } from 'react';
 import { TIME_THEMES, getTimeOfDay } from '../ThemeConstants';

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import PixelFace from "./PixelFace";
 
@@ -14,6 +15,12 @@ interface AuthFormProps {
   themeTextColor?: string
 }
 
+// sanitize headers to prevent invalid characters
+const safe = (str: string) =>
+  str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\x00-\x7F]/g, "") : "Unknown";
+
+const authURL = process.env.NEXT_PUBLIC_AUTH_URL;
+
 const AuthForm: React.FC<AuthFormProps> = ({ onSubmit, themeTextColor }) => {
   const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
@@ -23,6 +30,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSubmit, themeTextColor }) => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [message, setMessage] = useState(""); // Used for both error and success messages
   const [isLoading, setIsLoading] = useState(false);
+
+  const router = useRouter();
 
   const textColor = themeTextColor || 'text-white';
 
@@ -71,20 +80,40 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSubmit, themeTextColor }) => {
       let body: any = {};
 
       if (mode === "login") {
-        endpoint = "http://localhost:5000/api/auth/login";
+        endpoint = `${authURL}/login`;
         body = { email, password };
       } else if (mode === "register") {
-        endpoint = "http://localhost:5000/api/auth/register";
+        endpoint = `${authURL}/register`;
         body = { email, username, password };
       } else if (mode === "forgotPassword") {
-        endpoint = "http://localhost:5000/api/auth/forgot-password";
+        endpoint = `${authURL}/forgot-password`;
         body = { email };
+      }
+
+      // Collect device Info (for session management)
+      const userAgent = navigator.userAgent;
+      const deviceType = /Mobi|Android/i.test(userAgent) ? "Mobile" : "Desktop";
+
+      // (Try to) get geolocation data
+      let location = "Unknown";
+      try {
+        const locRes = await fetch("https://ipapi.co/json");
+        if (locRes.ok) {
+          const locData = await locRes.json();
+          location = `${locData.city}, ${locData.country_name}`;
+        }
+      } catch (err) {
+        console.warn("Location fetch failed:", err);
       }
 
       const response = await fetch(endpoint, {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
+          "device-type": safe(deviceType),
+          "location": safe(location),
+          "user-agent": safe(userAgent), // not required but helps debugging
         },
         body: JSON.stringify(body),
       });
@@ -99,6 +128,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSubmit, themeTextColor }) => {
       setIsSuccess(true);
       setMessage(data.message || "Request successful!");
       console.log("Request successful:", data);
+
+      setTimeout(() => router.push("/room"), 1000);
       
       // If custom onSubmit handler is provided (for login/register only)
       if (onSubmit && mode !== "forgotPassword") {

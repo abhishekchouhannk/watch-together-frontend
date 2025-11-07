@@ -8,7 +8,6 @@ import TwinklingStars from "./themeComponents/twinklingStars";
 import PixelSun from "./themeComponents/pixelSun";
 import PixelMoon from "./themeComponents/pixelMoon";
 import CloudLayer from "./themeComponents/clouds";
-import DevTimeSelector from "./themeComponents/ThemeSelector";
 
 const SharedBackground: React.FC = () => {
   const { animationStarted, blimpTrail, selectedTheme, setSelectedTheme } = useBackground();

@@ -2,12 +2,40 @@
 
 import React from "react";
 import AuthForm from "@/components/auth/AuthForm";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useBackground } from "@/components/landingPage/BackgroundProvider";
 import { TIME_THEMES } from "@/components/landingPage/ThemeConstants";
 
+import { useEffect } from "react";
+import axios from "axios";
+
 const AuthPage: React.FC = () => {
+
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      try {
+        const res = await axios.get(
+          `${process.env.NEXT_PUBLIC_AUTH_URL}/loggedIn`,
+          { withCredentials: true }
+        );
+
+        if (res.data.loggedIn) {
+          // user is already logged in, send to /room
+          router.replace("/room");
+        }
+      } catch (err) {
+        // user not logged in or error - stay here
+        console.log("Not logged in");
+      }
+    };
+
+    checkLoginStatus();
+  }, [router]);
+
+
   const handleAuthSubmit = async (data: {
     email: string;
     password: string;
