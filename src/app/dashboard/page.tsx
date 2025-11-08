@@ -2,14 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { Search, Plus, Users, Play, Pause, Clock, Filter } from 'lucide-react';
-import  RoomCard from '@/components/dashboard/RoomCard';
-import { RoomCardSkeleton } from '@/components/dashboard/RoomCard';
+import RoomCard from '@/components/dashboard/RoomCard';
 import CreateRoomModal from '@/components/dashboard/CreateRoomModal';
 import SearchBar from '@/components/dashboard/SearchBar';
-import { Room, RoomMode } from '@/components/dashboard/types/room';
 import RoomFilters from '@/components/dashboard/RoomFilters';
-
-import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import { RoomCardSkeleton } from '@/components/dashboard/RoomCard';
+import { Room, RoomMode } from '@/components/dashboard/types/room';
+const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:5000';
 
 export default function Dashboard() {
   const [myRooms, setMyRooms] = useState<Room[]>([]);
@@ -20,30 +19,58 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
-  const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
-
   useEffect(() => {
     fetchRooms();
   }, []);
 
+  // Re-apply filters whenever publicRooms, selectedMode, or searchQuery changes
+  useEffect(() => {
+    filterRooms(searchQuery, selectedMode);
+  }, [publicRooms, selectedMode, searchQuery]);
+
   const fetchRooms = async () => {
     try {
       setIsLoading(true);
-      const [myRoomsRes, publicRoomsRes] = await Promise.all([
-        fetch(`${SERVER_URL}/api/rooms/my-rooms`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`}, credentials: 'include'
-        }),
-        fetch(`${SERVER_URL}/api/rooms/public`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`}, credentials: 'include'
-        })
-      ]);
-
-      const myRoomsData = await myRoomsRes.json() || null;
-      const publicRoomsData = await publicRoomsRes.json();
+      const token = localStorage.getItem('token');
       
-      // setMyRooms(myRoomsData.rooms);
-      setPublicRooms(publicRoomsData.rooms);
-      setFilteredRooms(publicRoomsData.rooms);
+      // Fetch public rooms
+      const publicRoomsRes = await fetch(`${SERVER_URL}/api/rooms/public`, {
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+        }, 
+        credentials: 'include'
+      });
+
+      if (!publicRoomsRes.ok) {
+        throw new Error('Failed to fetch public rooms');
+      }
+
+      const publicRoomsData = await publicRoomsRes.json();
+      console.log('Public rooms data:', publicRoomsData); // Debug log
+      
+      setPublicRooms(publicRoomsData.rooms || []);
+
+      // Fetch user's rooms if authenticated
+      if (token) {
+        try {
+          const myRoomsRes = await fetch(`${SERVER_URL}/api/rooms/my-rooms`, {
+            headers: { 
+              'Authorization': `Bearer ${token}`,
+            }, 
+            credentials: 'include'
+          });
+
+          if (myRoomsRes.ok) {
+            const myRoomsData = await myRoomsRes.json();
+            console.log('My rooms data:', myRoomsData); // Debug log
+            setMyRooms(myRoomsData.rooms || []);
+          }
+        } catch (error) {
+          console.error('Error fetching my rooms:', error);
+          // Continue even if my-rooms fails
+        }
+      }
+      
     } catch (error) {
       console.error('Error fetching rooms:', error);
     } finally {
@@ -53,45 +80,49 @@ export default function Dashboard() {
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    filterRooms(query, selectedMode);
   };
 
   const handleModeFilter = (mode: RoomMode | 'all') => {
+    console.log('Filter selected:', mode); // Debug log
     setSelectedMode(mode);
-    filterRooms(searchQuery, mode);
   };
 
   const filterRooms = (query: string, mode: RoomMode | 'all') => {
+    console.log('Filtering rooms:', { query, mode, totalRooms: publicRooms.length }); // Debug log
+    
     let filtered = [...publicRooms];
 
+    // Filter by mode
     if (mode !== 'all') {
-      filtered = filtered.filter(room => 
-  room.mode?.toLowerCase() === mode.toLowerCase()
-);;
+      filtered = filtered.filter(room => {
+        console.log(`Room ${room.roomName} mode: ${room.mode}, looking for: ${mode}`); // Debug log
+        return room.mode === mode;
+      });
+      console.log(`After mode filter (${mode}):`, filtered.length); // Debug log
     }
 
-    if (query) {
+    // Filter by search query
+    if (query && query.trim() !== '') {
+      const lowerQuery = query.toLowerCase();
       filtered = filtered.filter(room => 
-        room.roomName.toLowerCase().includes(query.toLowerCase()) ||
-        room.description?.toLowerCase().includes(query.toLowerCase()) ||
-        room.tags?.some(tag => tag.toLowerCase().includes(query.toLowerCase()))
+        room.roomName?.toLowerCase().includes(lowerQuery) ||
+        room.description?.toLowerCase().includes(lowerQuery) ||
+        room.tags?.some(tag => tag.toLowerCase().includes(lowerQuery))
       );
+      console.log(`After search filter (${query}):`, filtered.length); // Debug log
     }
-
-    console.log(filteredRooms)
 
     setFilteredRooms(filtered);
   };
 
   return (
-    <ProtectedRoute>
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900">
       {/* Header */}
       <header className="sticky top-0 z-40 backdrop-blur-lg bg-gray-900/70 border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-white">
-              Welcome back! 👋
+              Welcome back 👋
             </h1>
             <button
               onClick={() => setIsCreateModalOpen(true)}
@@ -112,6 +143,14 @@ export default function Dashboard() {
           selectedMode={selectedMode} 
           onModeChange={handleModeFilter}
         />
+        
+        {/* Debug info - remove in production */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="mt-4 p-2 bg-gray-800/50 rounded text-xs text-gray-400">
+            Debug: Mode: {selectedMode} | Search: "{searchQuery}" | 
+            Public: {publicRooms.length} | Filtered: {filteredRooms.length}
+          </div>
+        )}
       </div>
 
       {/* My Rooms Section */}
@@ -120,7 +159,11 @@ export default function Dashboard() {
           <h2 className="text-xl font-semibold text-white mb-4">Your Rooms</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {myRooms.map((room) => (
-              <RoomCard key={room.roomId} room={room} isOwned={true} />
+              <RoomCard 
+                key={room.roomId || room._id} 
+                room={room} 
+                isOwned={true} 
+              />
             ))}
           </div>
         </section>
@@ -131,7 +174,7 @@ export default function Dashboard() {
         <h2 className="text-xl font-semibold text-white mb-4">
           Discover Rooms
           <span className="ml-2 text-sm text-gray-400">
-            ({filteredRooms.length} rooms available)
+            ({filteredRooms.length} {selectedMode !== 'all' ? `${selectedMode} ` : ''}rooms available)
           </span>
         </h2>
 
@@ -144,12 +187,22 @@ export default function Dashboard() {
         ) : filteredRooms.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredRooms.map((room) => (
-              <RoomCard key={room.roomId} room={room} isOwned={false} />
+              <RoomCard 
+                key={room.roomId || room._id} 
+                room={room} 
+                isOwned={false} 
+              />
             ))}
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-gray-400">No rooms found matching your criteria</p>
+            <p className="text-gray-400">
+              {selectedMode !== 'all' 
+                ? `No ${selectedMode} rooms found${searchQuery ? ` matching "${searchQuery}"` : ''}`
+                : searchQuery 
+                  ? `No rooms found matching "${searchQuery}"`
+                  : 'No rooms available'}
+            </p>
           </div>
         )}
       </section>
@@ -161,6 +214,5 @@ export default function Dashboard() {
         onRoomCreated={fetchRooms}
       />
     </div>
-    </ProtectedRoute>
   );
 }

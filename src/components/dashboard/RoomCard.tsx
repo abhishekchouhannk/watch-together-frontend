@@ -41,14 +41,18 @@ export default function RoomCard({ room, isOwned }: RoomCardProps) {
   };
 
   const getModeColor = (mode: string) => {
-    const colors = {
-      study: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-      gaming: 'bg-green-500/20 text-green-400 border-green-500/30',
-      entertainment: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-      casual: 'bg-gray-500/20 text-gray-400 border-gray-500/30'
-    };
-    return colors[mode as keyof typeof colors] || colors.casual;
-  };
+  switch(mode) {
+    case 'study':
+      return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+    case 'gaming':
+      return 'bg-green-500/20 text-green-400 border-green-500/30';
+    case 'entertainment':
+      return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
+    case 'casual':
+    default:
+      return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+  }
+};
 
   return (
     <div

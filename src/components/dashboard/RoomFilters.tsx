@@ -1,3 +1,4 @@
+// components/dashboard/RoomFilters.tsx
 import React from 'react';
 import { Monitor, Gamepad2, BookOpen, Coffee } from 'lucide-react';
 import { RoomMode } from '@/components/dashboard/types/room';
@@ -9,11 +10,41 @@ interface RoomFiltersProps {
 
 export default function RoomFilters({ selectedMode, onModeChange }: RoomFiltersProps) {
   const filters = [
-    { value: 'all', label: 'All Rooms', icon: Monitor, color: 'gray' },
-    { value: 'entertainment', label: 'Entertainment', icon: Monitor, color: 'purple' },
-    { value: 'gaming', label: 'Gaming', icon: Gamepad2, color: 'green' },
-    { value: 'study', label: 'Study', icon: BookOpen, color: 'blue' },
-    { value: 'casual', label: 'Casual', icon: Coffee, color: 'yellow' },
+    { 
+      value: 'all', 
+      label: 'All Rooms', 
+      icon: Monitor, 
+      activeClass: 'bg-gray-500/20 border-gray-500 text-gray-400',
+      inactiveClass: 'bg-gray-800/50 border-gray-700 text-gray-400 hover:border-gray-600'
+    },
+    { 
+      value: 'entertainment', 
+      label: 'Entertainment', 
+      icon: Monitor, 
+      activeClass: 'bg-purple-500/20 border-purple-500 text-purple-400',
+      inactiveClass: 'bg-gray-800/50 border-gray-700 text-gray-400 hover:border-gray-600'
+    },
+    { 
+      value: 'gaming', 
+      label: 'Gaming', 
+      icon: Gamepad2, 
+      activeClass: 'bg-green-500/20 border-green-500 text-green-400',
+      inactiveClass: 'bg-gray-800/50 border-gray-700 text-gray-400 hover:border-gray-600'
+    },
+    { 
+      value: 'study', 
+      label: 'Study', 
+      icon: BookOpen, 
+      activeClass: 'bg-blue-500/20 border-blue-500 text-blue-400',
+      inactiveClass: 'bg-gray-800/50 border-gray-700 text-gray-400 hover:border-gray-600'
+    },
+    { 
+      value: 'casual', 
+      label: 'Casual', 
+      icon: Coffee, 
+      activeClass: 'bg-yellow-500/20 border-yellow-500 text-yellow-400',
+      inactiveClass: 'bg-gray-800/50 border-gray-700 text-gray-400 hover:border-gray-600'
+    },
   ];
 
   return (
@@ -27,9 +58,7 @@ export default function RoomFilters({ selectedMode, onModeChange }: RoomFiltersP
             key={filter.value}
             onClick={() => onModeChange(filter.value as RoomMode | 'all')}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200
-                      ${isSelected 
-                        ? `bg-${filter.color}-500/20 border-${filter.color}-500 text-${filter.color}-400` 
-                        : 'bg-gray-800/50 border-gray-700 text-gray-400 hover:border-gray-600'}`}
+                      ${isSelected ? filter.activeClass : filter.inactiveClass}`}
           >
             <Icon size={16} />
             <span className="text-sm font-medium">{filter.label}</span>
