@@ -66,6 +66,33 @@
   --color-surface: #1F2937;
 
 
+   /* Animations */
+  --animate-slideDown: slideDown 0.3s ease-out;
+  --animate-slideUp: slideUp 0.3s ease-out;
+
+  /* Keyframes */
+  @keyframes slideDown {
+    from {
+      transform: translateY(-10px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(10px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
   
   /* You can also define these in oklch format for better color manipulation */
   /* Example conversions (approximate):
