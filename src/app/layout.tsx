@@ -4,6 +4,8 @@ import { BackgroundProvider } from "@/components/landingPage/BackgroundProvider"
 import SharedBackground from "@/components/landingPage/SharedBackground";
 import ThemeSelectorOverlay from "@/components/ThemeSelectorOverlay";
 
+import { headers } from "next/headers";
+
 export const metadata: Metadata = {
   title: "Watch Together",
   description: "Watch videos together with friends in real-time",

@@ -3,6 +3,7 @@
 import React from "react";
 import ThemeSelector from "@/components/landingPage/themeComponents/ThemeSelector";
 import { useBackground } from "@/components/landingPage/BackgroundProvider";
+import { usePathname } from "next/navigation";
 
 /**
  * Small wrapper which reads/writes background theme from context
@@ -12,6 +13,13 @@ export default function ThemeSelectorOverlay() {
   const { setSelectedTheme } = useBackground();
 
   if (process.env.NODE_ENV !== "development") return null;
+
+  const pathname = usePathname();
+
+  // Only show on "/" or "/auth"
+  if (pathname !== "/" && pathname !== "/auth") {
+    return null;
+  }
 
   return (
     <div

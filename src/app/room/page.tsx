@@ -23,6 +23,7 @@ import { useBackground } from "@/components/landingPage/BackgroundProvider";
 
 // import protected route
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import LogoutButton from "@/components/auth/LogoutButton";
 
 const WatchTogetherRoom = () => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -158,10 +159,12 @@ React.useEffect(() => {
           ))}
         </div>
 
-        <button className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors">
+        <LogoutButton />
+
+        {/* <button className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors">
           <LogOut className="w-4 h-4" />
-          <span className="hidden sm:inline">Leave</span>
-        </button>
+          <span className="hidden sm:inline">LogOut</span>
+        </button> */}
       </nav>
 
       {/* Main Content Area */}
