@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
-import PixelFace from "./PixelFace";
 
 type AuthMode = "login" | "register" | "forgotPassword";
 
@@ -12,7 +11,8 @@ interface AuthFormProps {
     password: string;
     username?: string;
   }) => Promise<void>;
-  themeTextColor?: string
+  themeTextColor?: string;
+  initialMode?: "login" | "register" | "forgotPassword";
 }
 
 // sanitize headers to prevent invalid characters
@@ -21,8 +21,8 @@ const safe = (str: string) =>
 
 const authURL = process.env.NEXT_PUBLIC_AUTH_URL;
 
-const AuthForm: React.FC<AuthFormProps> = ({ onSubmit, themeTextColor }) => {
-  const [mode, setMode] = useState<AuthMode>("login");
+const AuthForm: React.FC<AuthFormProps> = ({ onSubmit, themeTextColor, initialMode = 'login' }) => {
+  const [mode, setMode] = useState<AuthMode>(initialMode);
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");

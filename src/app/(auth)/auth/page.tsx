@@ -1,18 +1,17 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useMemo } from "react";
 import AuthForm from "@/components/auth/AuthForm";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useBackground } from "@/components/landingPage/BackgroundProvider";
 import { TIME_THEMES } from "@/components/landingPage/ThemeConstants";
-
-import { useEffect } from "react";
 import axios from "axios";
 
 const AuthPage: React.FC = () => {
 
   const router = useRouter();
+  
 
   useEffect(() => {
     const checkLoginStatus = async () => {
@@ -56,6 +55,11 @@ const AuthPage: React.FC = () => {
   const { selectedTheme } = useBackground();
   const currentTextColor = TIME_THEMES[selectedTheme].textColor;
 
+  const modeParam = searchParams.get("mode") as "login" | "register" | "forgotPassword" | null;
+
+  // ✅ useMemo prevents unnecessary re-renders
+  const initialMode = useMemo(() => modeParam || "login", [modeParam]);
+
   return (
     <>
       {fromLandingPage && (
@@ -73,7 +77,7 @@ const AuthPage: React.FC = () => {
         </motion.nav>
       )}
       <div className={`relative w-full min-h-screen flex items-center justify-center p-4`}>
-        <AuthForm onSubmit={handleAuthSubmit} themeTextColor={currentTextColor} />
+        <AuthForm onSubmit={handleAuthSubmit} themeTextColor={currentTextColor} initialMode={initialMode} />
       </div>
     </>
   );

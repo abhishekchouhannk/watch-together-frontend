@@ -20,7 +20,7 @@ export default function LogoutButton() {
       if (res.ok) {
         console.log("Logout success:", data);
         // Optionally clear any client-side state (like Redux/AuthContext)
-        router.push("/auth"); // redirect to login page
+        router.push("/login"); // redirect to login page
       } else {
         console.error("Logout failed:", data.message);
         alert("Failed to logout. Please try again.");
