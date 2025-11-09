@@ -1,15 +1,15 @@
+// app/dashboard/page.tsx (updated sections)
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { Search, Plus, Users, Play, Pause, Clock, Filter } from 'lucide-react';
-import  RoomCard from '@/components/dashboard/RoomCard';
-import { RoomCardSkeleton } from '@/components/dashboard/RoomCard';
+import RoomCard from '@/components/dashboard/RoomCard';
 import CreateRoomModal from '@/components/dashboard/CreateRoomModal';
 import SearchBar from '@/components/dashboard/SearchBar';
-import { Room, RoomMode } from '@/components/dashboard/types/room';
 import RoomFilters from '@/components/dashboard/RoomFilters';
+import { Room, RoomMode } from '@/components/dashboard/types/room';
 
-import ProtectedRoute from '@/components/auth/ProtectedRoute';
+const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:5000';
 
 export default function Dashboard() {
   const [myRooms, setMyRooms] = useState<Room[]>([]);
@@ -20,8 +20,6 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
-  const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
-
   useEffect(() => {
     fetchRooms();
   }, []);
@@ -31,21 +29,31 @@ export default function Dashboard() {
       setIsLoading(true);
       const [myRoomsRes, publicRoomsRes] = await Promise.all([
         fetch(`${SERVER_URL}/api/rooms/my-rooms`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`}, credentials: 'include'
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`}, 
+          credentials: 'include'
         }),
         fetch(`${SERVER_URL}/api/rooms/public`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`}, credentials: 'include'
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`}, 
+          credentials: 'include'
         })
       ]);
 
-      const myRoomsData = await myRoomsRes.json() || null;
+      if (!publicRoomsRes.ok) {
+        throw new Error('Failed to fetch public rooms');
+      }
+
+      const myRoomsData = myRoomsRes.ok ? await myRoomsRes.json() : { rooms: [] };
       const publicRoomsData = await publicRoomsRes.json();
       
-      // setMyRooms(myRoomsData.rooms);
-      setPublicRooms(publicRoomsData.rooms);
-      setFilteredRooms(publicRoomsData.rooms);
+      console.log('Fetched public rooms:', publicRoomsData.rooms); // Debug log
+      
+      setMyRooms(myRoomsData.rooms || []);
+      setPublicRooms(publicRoomsData.rooms || []);
+      setFilteredRooms(publicRoomsData.rooms || []);
     } catch (error) {
       console.error('Error fetching rooms:', error);
+      setPublicRooms([]);
+      setFilteredRooms([]);
     } finally {
       setIsLoading(false);
     }
@@ -57,34 +65,39 @@ export default function Dashboard() {
   };
 
   const handleModeFilter = (mode: RoomMode | 'all') => {
+    console.log('Filter selected:', mode); // Debug log
     setSelectedMode(mode);
     filterRooms(searchQuery, mode);
   };
 
   const filterRooms = (query: string, mode: RoomMode | 'all') => {
+    console.log('Filtering rooms:', { query, mode, totalRooms: publicRooms.length }); // Debug log
+    
     let filtered = [...publicRooms];
 
+    // Filter by mode
     if (mode !== 'all') {
-      filtered = filtered.filter(room => 
-  room.mode?.toLowerCase() === mode.toLowerCase()
-);;
+      filtered = filtered.filter(room => {
+        console.log(`Room ${room.roomName} mode: ${room.mode}`); // Debug log
+        return room.mode === mode;
+      });
     }
 
+    // Filter by search query
     if (query) {
+      const lowerQuery = query.toLowerCase();
       filtered = filtered.filter(room => 
-        room.roomName.toLowerCase().includes(query.toLowerCase()) ||
-        room.description?.toLowerCase().includes(query.toLowerCase()) ||
-        room.tags?.some(tag => tag.toLowerCase().includes(query.toLowerCase()))
+        room.roomName.toLowerCase().includes(lowerQuery) ||
+        room.description?.toLowerCase().includes(lowerQuery) ||
+        room.tags?.some(tag => tag.toLowerCase().includes(lowerQuery))
       );
     }
 
-    console.log(filteredRooms)
-
+    console.log('Filtered results:', filtered.length); // Debug log
     setFilteredRooms(filtered);
   };
 
   return (
-    <ProtectedRoute>
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900">
       {/* Header */}
       <header className="sticky top-0 z-40 backdrop-blur-lg bg-gray-900/70 border-b border-gray-800">
@@ -112,6 +125,11 @@ export default function Dashboard() {
           selectedMode={selectedMode} 
           onModeChange={handleModeFilter}
         />
+        
+        {/* Debug info - remove in production */}
+        <div className="mt-4 text-sm text-gray-500">
+          Total rooms: {publicRooms.length} | Filtered: {filteredRooms.length} | Mode: {selectedMode}
+        </div>
       </div>
 
       {/* My Rooms Section */}
@@ -149,7 +167,11 @@ export default function Dashboard() {
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-gray-400">No rooms found matching your criteria</p>
+            <p className="text-gray-400">
+              {selectedMode !== 'all' 
+                ? `No ${selectedMode} rooms found` 
+                : 'No rooms found matching your criteria'}
+            </p>
           </div>
         )}
       </section>
@@ -161,6 +183,19 @@ export default function Dashboard() {
         onRoomCreated={fetchRooms}
       />
     </div>
-    </ProtectedRoute>
+  );
+}
+
+// Room Card Skeleton Component
+export function RoomCardSkeleton() {
+  return (
+    <div className="bg-gray-800/90 rounded-xl h-64 animate-pulse">
+      <div className="h-32 bg-gray-700/50"></div>
+      <div className="p-4 space-y-3">
+        <div className="h-5 bg-gray-700/50 rounded w-3/4"></div>
+        <div className="h-4 bg-gray-700/50 rounded w-full"></div>
+        <div className="h-4 bg-gray-700/50 rounded w-1/2"></div>
+      </div>
+    </div>
   );
 }
