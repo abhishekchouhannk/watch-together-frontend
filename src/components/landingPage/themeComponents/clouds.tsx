@@ -36,10 +36,6 @@ const CloudLayer: React.FC<CloudLayerProps> = ({
       const scaledWidth = imgRatio * window.innerHeight;
       const browserWidth = window.innerWidth;
 
-      console.log(`browserHeight: ${window.innerHeight}`);
-      console.log(`browserWidth: ${window.innerWidth}`);
-      console.log(`scaledWidth: ${scaledWidth}`);
-
       // detect small screens
       setIsSmallScreen(browserWidth < imgWidth);
 

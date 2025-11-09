@@ -1,8 +1,7 @@
-// app/dashboard/page.tsx (updated sections)
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Users, Play, Pause, Clock, Filter } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import RoomCard from '@/components/dashboard/RoomCard';
 import CreateRoomModal from '@/components/dashboard/CreateRoomModal';
 import SearchBar from '@/components/dashboard/SearchBar';
@@ -20,22 +19,28 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
+  /** Fetch rooms on mount */
   useEffect(() => {
     fetchRooms();
   }, []);
 
+  /** Re-filter whenever data, mode, or search query changes */
+  useEffect(() => {
+    if (!isLoading && publicRooms.length > 0) {
+      filterRooms(searchQuery, selectedMode);
+    }
+  }, [publicRooms, selectedMode, searchQuery]);
+
   const fetchRooms = async () => {
     try {
       setIsLoading(true);
+
+      const token = localStorage.getItem('token');
+      const headers = { 'Authorization': `Bearer ${token}` };
+
       const [myRoomsRes, publicRoomsRes] = await Promise.all([
-        fetch(`${SERVER_URL}/api/rooms/my-rooms`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`}, 
-          credentials: 'include'
-        }),
-        fetch(`${SERVER_URL}/api/rooms/public`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`}, 
-          credentials: 'include'
-        })
+        fetch(`${SERVER_URL}/api/rooms/my-rooms`, { headers, credentials: 'include' }),
+        fetch(`${SERVER_URL}/api/rooms/public`, { headers, credentials: 'include' })
       ]);
 
       if (!publicRoomsRes.ok) {
@@ -44,9 +49,9 @@ export default function Dashboard() {
 
       const myRoomsData = myRoomsRes.ok ? await myRoomsRes.json() : { rooms: [] };
       const publicRoomsData = await publicRoomsRes.json();
-      
-      console.log('Fetched public rooms:', publicRoomsData.rooms); // Debug log
-      
+
+      console.log('Fetched public rooms:', publicRoomsData.rooms);
+
       setMyRooms(myRoomsData.rooms || []);
       setPublicRooms(publicRoomsData.rooms || []);
       setFilteredRooms(publicRoomsData.rooms || []);
@@ -61,44 +66,40 @@ export default function Dashboard() {
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    filterRooms(query, selectedMode);
   };
 
   const handleModeFilter = (mode: RoomMode | 'all') => {
-    console.log('Filter selected:', mode); // Debug log
     setSelectedMode(mode);
-    filterRooms(searchQuery, mode);
   };
 
   const filterRooms = (query: string, mode: RoomMode | 'all') => {
-    console.log('Filtering rooms:', { query, mode, totalRooms: publicRooms.length }); // Debug log
-    
+    if (!publicRooms || publicRooms.length === 0) {
+      setFilteredRooms([]);
+      return;
+    }
+
     let filtered = [...publicRooms];
 
     // Filter by mode
     if (mode !== 'all') {
-      filtered = filtered.filter(room => {
-        console.log(`Room ${room.roomName} mode: ${room.mode}`); // Debug log
-        return room.mode === mode;
-      });
+      filtered = filtered.filter((room) => room.mode === mode);
     }
 
     // Filter by search query
-    if (query) {
+    if (query.trim()) {
       const lowerQuery = query.toLowerCase();
-      filtered = filtered.filter(room => 
+      filtered = filtered.filter((room) =>
         room.roomName.toLowerCase().includes(lowerQuery) ||
         room.description?.toLowerCase().includes(lowerQuery) ||
-        room.tags?.some(tag => tag.toLowerCase().includes(lowerQuery))
+        room.tags?.some((tag) => tag.toLowerCase().includes(lowerQuery))
       );
     }
 
-    console.log('Filtered results:', filtered.length); // Debug log
     setFilteredRooms(filtered);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900">
+    <div className="min-h-screen overflow-y-auto bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900">
       {/* Header */}
       <header className="sticky top-0 z-40 backdrop-blur-lg bg-gray-900/70 border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -121,28 +122,12 @@ export default function Dashboard() {
       {/* Search and Filters */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
         <SearchBar onSearch={handleSearch} />
-        <RoomFilters 
-          selectedMode={selectedMode} 
-          onModeChange={handleModeFilter}
-        />
-        
-        {/* Debug info - remove in production */}
+        <RoomFilters selectedMode={selectedMode} onModeChange={handleModeFilter} />
+
         <div className="mt-4 text-sm text-gray-500">
           Total rooms: {publicRooms.length} | Filtered: {filteredRooms.length} | Mode: {selectedMode}
         </div>
       </div>
-
-      {/* My Rooms Section */}
-      {myRooms.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
-          <h2 className="text-xl font-semibold text-white mb-4">Your Rooms</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {myRooms.map((room) => (
-              <RoomCard key={room.roomId} room={room} isOwned={true} />
-            ))}
-          </div>
-        </section>
-      )}
 
       {/* Public Rooms Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 pb-12">
@@ -168,16 +153,28 @@ export default function Dashboard() {
         ) : (
           <div className="text-center py-12">
             <p className="text-gray-400">
-              {selectedMode !== 'all' 
-                ? `No ${selectedMode} rooms found` 
+              {selectedMode !== 'all'
+                ? `No ${selectedMode} rooms found`
                 : 'No rooms found matching your criteria'}
             </p>
           </div>
         )}
       </section>
 
+      {/* My Rooms Section */}
+      {myRooms.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+          <h2 className="text-xl font-semibold text-white mb-4">Your Rooms</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {myRooms.map((room) => (
+              <RoomCard key={room.roomId} room={room} isOwned={true} />
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Create Room Modal */}
-      <CreateRoomModal 
+      <CreateRoomModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onRoomCreated={fetchRooms}
@@ -185,6 +182,7 @@ export default function Dashboard() {
     </div>
   );
 }
+
 
 // Room Card Skeleton Component
 export function RoomCardSkeleton() {
