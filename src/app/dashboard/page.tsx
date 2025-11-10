@@ -232,10 +232,10 @@ export default function Dashboard() {
             onModeChange={handleModeFilter}
           />
 
-          <div className={`mt-4 text-sm ${themeClasses.textMuted}`}>
+          {/* <div className={`mt-4 text-sm ${themeClasses.textMuted}`}>
             Total rooms: {viewMode === "public" ? publicRooms.length : myRooms.length} | 
             Filtered: {filteredRooms.length} | Mode: {selectedMode}
-          </div>
+          </div> */}
         </div>
 
         {/* Rooms Section with Toggle */}
