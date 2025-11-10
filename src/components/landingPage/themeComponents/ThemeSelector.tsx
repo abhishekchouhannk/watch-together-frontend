@@ -4,7 +4,7 @@
 import { capitalize } from '@/utils/util-Functions'
 
 import { useState, useMemo } from 'react';
-import { TIME_THEMES, getTimeOfDay } from '../ThemeConstants';
+import { TIME_THEMES, getTimeOfDay } from '../../ThemeConstants';
 import { useBackground } from "@/components/landingPage/BackgroundProvider";
 
 const TIME_EMOJIS: Record<keyof typeof TIME_THEMES, string> = {

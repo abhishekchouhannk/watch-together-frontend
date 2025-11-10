@@ -1,3 +1,7 @@
+'use client';
+
+import { useTheme } from '@/hooks/useTheme';
+
 import React, { useState, useCallback } from 'react';
 import { Search, X } from 'lucide-react';
 import { debounce } from '@/utils/debounce';
@@ -7,6 +11,7 @@ interface SearchBarProps {
 }
 
 export default function SearchBar({ onSearch }: SearchBarProps) {
+  const theme = useTheme();
   const [searchValue, setSearchValue] = useState('');
   const [isFocused, setIsFocused] = useState(false);
 
@@ -36,12 +41,15 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
           type="text"
           value={searchValue}
           onChange={handleSearchChange}
-          onFocus={() => setIsFocused(true)}
+           onFocus={(e) => {
+    e.target.style.borderColor = theme.buttonSecondary;
+    setIsFocused(true);
+  }}
           onBlur={() => setIsFocused(false)}
           placeholder="Search rooms by name, description, or tags..."
-          className="w-full pl-12 pr-12 py-3 bg-gray-800/50 border border-gray-700 rounded-xl
-                   text-white placeholder-gray-500 focus:outline-none focus:border-purple-500
-                   focus:bg-gray-800/70 transition-all duration-200"
+          className={`w-full pl-12 pr-12 py-3 bg-gray-800/50 border border-gray-700 rounded-xl
+                   text-white placeholder-gray-500 focus:outline-none
+                   focus:bg-gray-800/70 transition-all duration-200`}
         />
         {searchValue && (
           <button
