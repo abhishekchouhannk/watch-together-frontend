@@ -1,8 +1,16 @@
 // components/dashboard/RoomCard.tsx
-import React, { useState, useRef } from 'react';
-import { Users, Play, Pause, Lock, Unlock, Crown, ArrowRight } from 'lucide-react';
-import { Room } from '@/components/dashboard/types/room';
-import { useRouter } from 'next/navigation';
+import React, { useState, useRef } from "react";
+import {
+  Users,
+  Play,
+  Pause,
+  Lock,
+  Unlock,
+  Crown,
+  ArrowRight,
+} from "lucide-react";
+import { Room } from "@/components/dashboard/types/room";
+import { useRouter } from "next/navigation";
 
 interface RoomCardProps {
   room: Room;
@@ -15,25 +23,23 @@ export default function RoomCard({ room, isOwned }: RoomCardProps) {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  const hoverTimeout = useRef<NodeJS.Timeout | null>(null);
+
   const handleMouseEnter = () => {
     setIsHovered(true);
-    setTimeout(() => {
-      if (isHovered) {
-        setIsExpanded(true);
-        // Start playing video preview if available
-        if (videoRef.current && room.video?.url) {
-          videoRef.current.play();
-        }
+    hoverTimeout.current = setTimeout(() => {
+      setIsExpanded(true);
+      if (videoRef.current && room.video?.url) {
+        videoRef.current.play();
       }
-    }, 500); // Delay expansion by 500ms
+    }, 500);
   };
 
   const handleMouseLeave = () => {
     setIsHovered(false);
     setIsExpanded(false);
-    if (videoRef.current) {
-      videoRef.current.pause();
-    }
+    if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
+    if (videoRef.current) videoRef.current.pause();
   };
 
   const handleJoinRoom = () => {
@@ -42,10 +48,10 @@ export default function RoomCard({ room, isOwned }: RoomCardProps) {
 
   const getModeColor = (mode: string) => {
     const colors = {
-      study: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-      gaming: 'bg-green-500/20 text-green-400 border-green-500/30',
-      entertainment: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-      casual: 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+      study: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+      gaming: "bg-green-500/20 text-green-400 border-green-500/30",
+      entertainment: "bg-purple-500/20 text-purple-400 border-purple-500/30",
+      casual: "bg-gray-500/20 text-gray-400 border-gray-500/30",
     };
     return colors[mode as keyof typeof colors] || colors.casual;
   };
@@ -53,32 +59,45 @@ export default function RoomCard({ room, isOwned }: RoomCardProps) {
   return (
     <div
       className={`relative transition-all duration-500 ease-in-out transform
-                  ${isExpanded ? 'scale-105 z-30' : 'scale-100 z-10'}
-                  ${isHovered ? 'shadow-2xl shadow-purple-500/20' : 'shadow-lg'}`}
+                  ${isExpanded ? "scale-105 z-30" : "scale-100 z-10"}
+                  ${
+                    isHovered ? "shadow-2xl shadow-purple-500/20" : "shadow-lg"
+                  }`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className={`bg-gray-800/90 backdrop-blur-sm rounded-xl overflow-hidden border 
+      <div
+        className={`bg-gray-800/90 backdrop-blur-sm rounded-xl overflow-hidden border 
                        border-gray-700 hover:border-purple-500/50 transition-all duration-300
-                       ${isExpanded ? 'h-auto' : 'h-64'}`}>
-        
+                       ${isExpanded ? "h-auto" : "h-64"}`}
+      >
         {/* Room Header */}
         <div className="relative h-32 bg-gradient-to-br from-purple-600/20 to-blue-600/20">
           {room.thumbnail ? (
-            <img 
-              src={room.thumbnail} 
+            <img
+              src={room.thumbnail}
               alt={room.roomName}
               className="w-full h-full object-cover"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <div className="text-4xl">{room.mode === 'gaming' ? '🎮' : room.mode === 'study' ? '📚' : '🎬'}</div>
+              <div className="text-4xl">
+                {room.mode === "gaming"
+                  ? "🎮"
+                  : room.mode === "study"
+                  ? "📚"
+                  : "🎬"}
+              </div>
             </div>
           )}
-          
+
           {/* Status Indicators */}
           <div className="absolute top-2 left-2 flex gap-2">
-            <span className={`px-2 py-1 text-xs rounded-full border ${getModeColor(room.mode)}`}>
+            <span
+              className={`px-2 py-1 text-xs rounded-full border ${getModeColor(
+                room.mode
+              )}`}
+            >
               {room.mode}
             </span>
             {room.video?.isPlaying && (
@@ -91,7 +110,11 @@ export default function RoomCard({ room, isOwned }: RoomCardProps) {
 
           {/* Privacy Indicator */}
           <div className="absolute top-2 right-2">
-            {room.isPublic ? <Unlock size={16} className="text-white/70" /> : <Lock size={16} className="text-white/70" />}
+            {room.isPublic ? (
+              <Unlock size={16} className="text-white/70" />
+            ) : (
+              <Lock size={16} className="text-white/70" />
+            )}
           </div>
 
           {/* Owner Badge */}
@@ -105,15 +128,21 @@ export default function RoomCard({ room, isOwned }: RoomCardProps) {
 
         {/* Room Info */}
         <div className="p-4">
-          <h3 className="text-lg font-semibold text-white mb-1 truncate">{room.roomName}</h3>
-          <p className="text-sm text-gray-400 mb-3 line-clamp-2">{room.description || 'No description'}</p>
-          
+          <h3 className="text-lg font-semibold text-white mb-1 truncate">
+            {room.roomName}
+          </h3>
+          <p className="text-sm text-gray-400 mb-3 line-clamp-2">
+            {room.description || "No description"}
+          </p>
+
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-gray-400">
               <Users size={16} />
-              <span className="text-sm">{room.participants.length}/{room.maxParticipants}</span>
+              <span className="text-sm">
+                {room.participants.length}/{room.maxParticipants}
+              </span>
             </div>
-            
+
             {!isExpanded && (
               <button
                 onClick={handleJoinRoom}
@@ -141,7 +170,7 @@ export default function RoomCard({ room, isOwned }: RoomCardProps) {
                 />
                 <div className="absolute bottom-2 left-2 bg-black/70 px-2 py-1 rounded">
                   <span className="text-xs text-white">
-                    {room.video.isPlaying ? 'Currently Playing' : 'Paused'}
+                    {room.video.isPlaying ? "Currently Playing" : "Paused"}
                   </span>
                 </div>
               </div>
@@ -150,12 +179,14 @@ export default function RoomCard({ room, isOwned }: RoomCardProps) {
             {/* Participants Preview */}
             <div className="p-4 space-y-3">
               <div className="flex items-center justify-between">
-                <h4 className="text-sm font-medium text-gray-300">Active Participants</h4>
+                <h4 className="text-sm font-medium text-gray-300">
+                  Active Participants
+                </h4>
                 <span className="text-xs text-gray-500">
                   {new Date(room.createdAt).toLocaleDateString()}
                 </span>
               </div>
-              
+
               <div className="flex -space-x-2">
                 {room.participants.slice(0, 5).map((participant, idx) => (
                   <div
@@ -169,8 +200,10 @@ export default function RoomCard({ room, isOwned }: RoomCardProps) {
                   </div>
                 ))}
                 {room.participants.length > 5 && (
-                  <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center 
-                                text-xs text-gray-300 border-2 border-gray-800">
+                  <div
+                    className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center 
+                                text-xs text-gray-300 border-2 border-gray-800"
+                  >
                     +{room.participants.length - 5}
                   </div>
                 )}
@@ -180,7 +213,10 @@ export default function RoomCard({ room, isOwned }: RoomCardProps) {
               {room.tags && room.tags.length > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {room.tags.map((tag, idx) => (
-                    <span key={idx} className="text-xs px-2 py-1 bg-gray-700/50 text-gray-400 rounded">
+                    <span
+                      key={idx}
+                      className="text-xs px-2 py-1 bg-gray-700/50 text-gray-400 rounded"
+                    >
                       #{tag}
                     </span>
                   ))}
