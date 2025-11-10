@@ -1,19 +1,72 @@
 'use client';
 
-import { useTheme } from '@/hooks/useTheme';
-
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { Search, X } from 'lucide-react';
-import { debounce } from '@/utils/debounce';
+import { debounce } from 'lodash';
+import { useTheme } from '@/hooks/useTheme';
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
+  placeholder?: string;
 }
 
-export default function SearchBar({ onSearch }: SearchBarProps) {
+export default function SearchBar({ 
+  onSearch, 
+  placeholder = "Search rooms by name, description, or tags..." 
+}: SearchBarProps) {
   const theme = useTheme();
   const [searchValue, setSearchValue] = useState('');
   const [isFocused, setIsFocused] = useState(false);
+
+  // Theme-specific classes
+  const getThemeClasses = () => {
+    const baseClasses = {
+      morning: {
+        inputBg: 'bg-orange-800/30',
+        inputBorder: 'border-orange-700/50',
+        inputFocusBorder: 'border-orange-500',
+        inputFocusBg: 'bg-orange-800/50',
+        text: 'text-orange-100',
+        placeholder: 'placeholder-orange-400',
+        icon: 'text-orange-400',
+        iconHover: 'hover:text-orange-200',
+      },
+      afternoon: {
+        inputBg: 'bg-sky-800/30',
+        inputBorder: 'border-sky-700/50',
+        inputFocusBorder: 'border-yellow-400',
+        inputFocusBg: 'bg-sky-800/50',
+        text: 'text-sky-100',
+        placeholder: 'placeholder-sky-400',
+        icon: 'text-sky-400',
+        iconHover: 'hover:text-sky-200',
+      },
+      evening: {
+        inputBg: 'bg-purple-800/30',
+        inputBorder: 'border-purple-700/50',
+        inputFocusBorder: 'border-purple-500',
+        inputFocusBg: 'bg-purple-800/50',
+        text: 'text-purple-100',
+        placeholder: 'placeholder-purple-400',
+        icon: 'text-purple-400',
+        iconHover: 'hover:text-purple-200',
+      },
+      night: {
+        inputBg: 'bg-indigo-800/30',
+        inputBorder: 'border-indigo-700/50',
+        inputFocusBorder: 'border-indigo-500',
+        inputFocusBg: 'bg-indigo-800/50',
+        text: 'text-white',
+        placeholder: 'placeholder-indigo-400',
+        icon: 'text-indigo-400',
+        iconHover: 'hover:text-indigo-200',
+      },
+    };
+
+    return baseClasses[theme.name as keyof typeof baseClasses];
+  };
+
+  const themeClasses = getThemeClasses();
 
   const debouncedSearch = useCallback(
     debounce((value: string) => {
@@ -36,26 +89,24 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
   return (
     <div className={`relative transition-all duration-300 ${isFocused ? 'scale-105' : 'scale-100'}`}>
       <div className="relative">
-        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+        <Search className={`absolute left-4 top-1/2 transform -translate-y-1/2 ${themeClasses.icon}`} size={20} />
         <input
           type="text"
           value={searchValue}
           onChange={handleSearchChange}
-           onFocus={(e) => {
-    e.target.style.borderColor = theme.buttonSecondary;
-    setIsFocused(true);
-  }}
+          onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          placeholder="Search rooms by name, description, or tags..."
-          className={`w-full pl-12 pr-12 py-3 bg-gray-800/50 border border-gray-700 rounded-xl
-                   text-white placeholder-gray-500 focus:outline-none
-                   focus:bg-gray-800/70 transition-all duration-200`}
+          placeholder={placeholder}
+          className={`w-full pl-12 pr-12 py-3 ${isFocused ? themeClasses.inputFocusBg : themeClasses.inputBg} 
+                   border ${themeClasses.inputBorder} rounded-xl
+                   ${themeClasses.text} ${themeClasses.placeholder} focus:outline-none
+                   focus:${themeClasses.inputFocusBorder} transition-all duration-200 backdrop-blur-sm`}
         />
         {searchValue && (
           <button
             onClick={clearSearch}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 
-                     hover:text-white transition-colors"
+            className={`absolute right-4 top-1/2 transform -translate-y-1/2 ${themeClasses.icon} 
+                     ${themeClasses.iconHover} transition-colors`}
           >
             <X size={18} />
           </button>
