@@ -23,7 +23,7 @@ const AuthPage: React.FC = () => {
 
         if (res.data.loggedIn) {
           // user is already logged in, send to /room
-          router.replace("/room");
+          router.replace("/dashboard");
         }
       } catch (err) {
         // user not logged in or error - stay here

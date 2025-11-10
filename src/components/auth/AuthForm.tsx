@@ -129,7 +129,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSubmit, themeTextColor, initialMo
       setMessage(data.message || "Request successful!");
       console.log("Request successful:", data);
 
-      setTimeout(() => router.push("/room"), 1000);
+      setTimeout(() => router.push("/dashboard"), 1000);
       
       // If custom onSubmit handler is provided (for login/register only)
       if (onSubmit && mode !== "forgotPassword") {

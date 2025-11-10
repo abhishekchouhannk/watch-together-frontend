@@ -23,14 +23,14 @@ export interface Room {
   participants: Participant[];
   tags?: string[];
   status: 'active' | 'idle' | 'ended';
-  createdAt: string;
-  updatedAt: string;
+  // createdAt: string;
+  // updatedAt: string;
 }
 
 export interface Participant {
   userId: string;
   username: string;
-  avatar?: string;
+  // avatar?: string;
   joinedAt: string;
-  isActive: boolean;
+  // isActive: boolean;
 }

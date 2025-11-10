@@ -1,22 +1,25 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { Plus } from 'lucide-react';
-import RoomCard from '@/components/dashboard/RoomCard';
-import CreateRoomModal from '@/components/dashboard/CreateRoomModal';
-import SearchBar from '@/components/dashboard/SearchBar';
-import RoomFilters from '@/components/dashboard/RoomFilters';
-import { Room, RoomMode } from '@/components/dashboard/types/room';
+import React, { useState, useEffect } from "react";
+import { Plus } from "lucide-react";
+import RoomCard from "@/components/dashboard/RoomCard";
+import CreateRoomModal from "@/components/dashboard/CreateRoomModal";
+import SearchBar from "@/components/dashboard/SearchBar";
+import RoomFilters from "@/components/dashboard/RoomFilters";
+import { Room, RoomMode } from "@/components/dashboard/types/room";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import LogoutButton from "@/components/auth/LogoutButton";
 
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:5000';
+const SERVER_URL =
+  process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
 export default function Dashboard() {
   const [myRooms, setMyRooms] = useState<Room[]>([]);
   const [publicRooms, setPublicRooms] = useState<Room[]>([]);
   const [filteredRooms, setFilteredRooms] = useState<Room[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [selectedMode, setSelectedMode] = useState<RoomMode | 'all'>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedMode, setSelectedMode] = useState<RoomMode | "all">("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
   /** Fetch rooms on mount */
@@ -35,28 +38,28 @@ export default function Dashboard() {
     try {
       setIsLoading(true);
 
-      const token = localStorage.getItem('token');
-      const headers = { 'Authorization': `Bearer ${token}` };
-
+      // Include credentials because auth is cookie based (JWTs; accessToken, refreshToken, and sessionId)
       const [myRoomsRes, publicRoomsRes] = await Promise.all([
-        fetch(`${SERVER_URL}/api/rooms/my-rooms`, { headers, credentials: 'include' }),
-        fetch(`${SERVER_URL}/api/rooms/public`, { headers, credentials: 'include' })
+        fetch(`${SERVER_URL}/api/rooms/my-rooms`, { credentials: "include" }),
+        fetch(`${SERVER_URL}/api/rooms/public`, { credentials: "include" }),
       ]);
 
       if (!publicRoomsRes.ok) {
-        throw new Error('Failed to fetch public rooms');
+        throw new Error("Failed to fetch public rooms");
       }
 
-      const myRoomsData = myRoomsRes.ok ? await myRoomsRes.json() : { rooms: [] };
+      const myRoomsData = myRoomsRes.ok
+        ? await myRoomsRes.json()
+        : { rooms: [] };
       const publicRoomsData = await publicRoomsRes.json();
 
-      console.log('Fetched public rooms:', publicRoomsData.rooms);
+      console.log("Fetched public rooms:", publicRoomsData.rooms);
 
       setMyRooms(myRoomsData.rooms || []);
       setPublicRooms(publicRoomsData.rooms || []);
       setFilteredRooms(publicRoomsData.rooms || []);
     } catch (error) {
-      console.error('Error fetching rooms:', error);
+      console.error("Error fetching rooms:", error);
       setPublicRooms([]);
       setFilteredRooms([]);
     } finally {
@@ -68,11 +71,11 @@ export default function Dashboard() {
     setSearchQuery(query);
   };
 
-  const handleModeFilter = (mode: RoomMode | 'all') => {
+  const handleModeFilter = (mode: RoomMode | "all") => {
     setSelectedMode(mode);
   };
 
-  const filterRooms = (query: string, mode: RoomMode | 'all') => {
+  const filterRooms = (query: string, mode: RoomMode | "all") => {
     if (!publicRooms || publicRooms.length === 0) {
       setFilteredRooms([]);
       return;
@@ -81,32 +84,50 @@ export default function Dashboard() {
     let filtered = [...publicRooms];
 
     // Filter by mode
-    if (mode !== 'all') {
+    if (mode !== "all") {
       filtered = filtered.filter((room) => room.mode === mode);
     }
 
     // Filter by search query
     if (query.trim()) {
       const lowerQuery = query.toLowerCase();
-      filtered = filtered.filter((room) =>
-        room.roomName.toLowerCase().includes(lowerQuery) ||
-        room.description?.toLowerCase().includes(lowerQuery) ||
-        room.tags?.some((tag) => tag.toLowerCase().includes(lowerQuery))
+      filtered = filtered.filter(
+        (room) =>
+          room.roomName.toLowerCase().includes(lowerQuery) ||
+          room.description?.toLowerCase().includes(lowerQuery) ||
+          room.tags?.some((tag) => tag.toLowerCase().includes(lowerQuery))
       );
     }
 
     setFilteredRooms(filtered);
   };
 
+  const handleScrollBubble = (e: React.WheelEvent<HTMLDivElement>) => {
+    const target = e.currentTarget;
+    const isAtTop = target.scrollTop === 0;
+    const isAtBottom =
+      Math.ceil(target.scrollTop + target.clientHeight) >= target.scrollHeight;
+
+    if (
+      (isAtTop && e.deltaY < 0) || // scrolling up at top
+      (isAtBottom && e.deltaY > 0) // scrolling down at bottom
+    ) {
+      // Let scroll pass to parent
+      return;
+    }
+
+    // Prevent parent scroll
+    e.stopPropagation();
+  };
+
   return (
-    <div className="min-h-screen overflow-y-auto bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900">
+    <ProtectedRoute>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900">
       {/* Header */}
       <header className="sticky top-0 z-40 backdrop-blur-lg bg-gray-900/70 border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-white">
-              Welcome back! 👋
-            </h1>
+            <h1 className="text-2xl font-bold text-white">Welcome back! 👋</h1>
             <button
               onClick={() => setIsCreateModalOpen(true)}
               className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 
@@ -122,10 +143,14 @@ export default function Dashboard() {
       {/* Search and Filters */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
         <SearchBar onSearch={handleSearch} />
-        <RoomFilters selectedMode={selectedMode} onModeChange={handleModeFilter} />
+        <RoomFilters
+          selectedMode={selectedMode}
+          onModeChange={handleModeFilter}
+        />
 
         <div className="mt-4 text-sm text-gray-500">
-          Total rooms: {publicRooms.length} | Filtered: {filteredRooms.length} | Mode: {selectedMode}
+          Total rooms: {publicRooms.length} | Filtered: {filteredRooms.length} |
+          Mode: {selectedMode}
         </div>
       </div>
 
@@ -138,37 +163,48 @@ export default function Dashboard() {
           </span>
         </h2>
 
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {[...Array(8)].map((_, i) => (
-              <RoomCardSkeleton key={i} />
-            ))}
-          </div>
-        ) : filteredRooms.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filteredRooms.map((room) => (
-              <RoomCard key={room.roomId} room={room} isOwned={false} />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-gray-400">
-              {selectedMode !== 'all'
-                ? `No ${selectedMode} rooms found`
-                : 'No rooms found matching your criteria'}
-            </p>
-          </div>
-        )}
+        {/* Scrollable container */}
+        <div
+          className="overflow-y-auto max-h-[60vh] pr-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 rounded-lg"
+          onWheel={(e) => handleScrollBubble(e)}
+        >
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {[...Array(8)].map((_, i) => (
+                <RoomCardSkeleton key={i} />
+              ))}
+            </div>
+          ) : filteredRooms.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filteredRooms.map((room) => (
+                <RoomCard key={room.roomId} room={room} isOwned={false} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-400">
+                {selectedMode !== "all"
+                  ? `No ${selectedMode} rooms found`
+                  : "No rooms found matching your criteria"}
+              </p>
+            </div>
+          )}
+        </div>
       </section>
 
       {/* My Rooms Section */}
       {myRooms.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 pb-12">
           <h2 className="text-xl font-semibold text-white mb-4">Your Rooms</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {myRooms.map((room) => (
-              <RoomCard key={room.roomId} room={room} isOwned={true} />
-            ))}
+          <div
+            className="overflow-y-auto max-h-[60vh] pr-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 rounded-lg"
+            onWheel={(e) => handleScrollBubble(e)}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {myRooms.map((room) => (
+                <RoomCard key={room.roomId} room={room} isOwned={true} />
+              ))}
+            </div>
           </div>
         </section>
       )}
@@ -180,9 +216,9 @@ export default function Dashboard() {
         onRoomCreated={fetchRooms}
       />
     </div>
+    </ProtectedRoute>
   );
 }
-
 
 // Room Card Skeleton Component
 export function RoomCardSkeleton() {
