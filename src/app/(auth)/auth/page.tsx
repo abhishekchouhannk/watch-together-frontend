@@ -5,7 +5,7 @@ import AuthForm from "@/components/auth/AuthForm";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useBackground } from "@/components/landingPage/BackgroundProvider";
-import { TIME_THEMES } from "@/components/landingPage/ThemeConstants";
+import { TIME_THEMES } from "@/components/ThemeConstants";
 import axios from "axios";
 
 const AuthPage: React.FC = () => {

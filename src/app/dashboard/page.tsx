@@ -9,11 +9,17 @@ import RoomFilters from "@/components/dashboard/RoomFilters";
 import { Room, RoomMode } from "@/components/dashboard/types/room";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import LogoutButton from "@/components/auth/LogoutButton";
+import { useBackground } from "@/components/landingPage/BackgroundProvider";
+import { TIME_THEMES } from "@/components/ThemeConstants";
 
 const SERVER_URL =
   process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
 export default function Dashboard() {
+  // Get the current theme
+  const { selectedTheme } = useBackground();
+  const theme = TIME_THEMES[selectedTheme];
+
   const [myRooms, setMyRooms] = useState<Room[]>([]);
   const [publicRooms, setPublicRooms] = useState<Room[]>([]);
   const [filteredRooms, setFilteredRooms] = useState<Room[]>([]);
@@ -21,7 +27,36 @@ export default function Dashboard() {
   const [selectedMode, setSelectedMode] = useState<RoomMode | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<"public" | "my">("public"); // New state for toggle
+  const [viewMode, setViewMode] = useState<"public" | "my">("public");
+
+  // Theme-specific classes
+  const headerBg = selectedTheme === 'night' 
+    ? 'bg-gray-900/70 border-gray-800' 
+    : 'bg-white/70 border-gray-200';
+  
+  const containerBg = selectedTheme === 'night'
+    ? 'bg-gray-800/50'
+    : 'bg-white/50';
+  
+  const toggleActiveBg = selectedTheme === 'night'
+    ? 'bg-purple-600'
+    : theme.buttonPrimary.split(' ')[0]; // Extract just the bg-color class
+  
+  const toggleInactiveText = selectedTheme === 'night'
+    ? 'text-gray-400 hover:text-gray-300'
+    : 'text-gray-600 hover:text-gray-500';
+  
+  const scrollbarClasses = selectedTheme === 'night'
+    ? 'scrollbar-thumb-gray-700 scrollbar-track-gray-900'
+    : 'scrollbar-thumb-gray-300 scrollbar-track-gray-100';
+  
+  const emptyStateText = selectedTheme === 'night'
+    ? 'text-gray-400'
+    : 'text-gray-600';
+  
+  const metaText = selectedTheme === 'night'
+    ? 'text-gray-500'
+    : 'text-gray-600';
 
   /** Fetch rooms on mount */
   useEffect(() => {
@@ -39,7 +74,6 @@ export default function Dashboard() {
     try {
       setIsLoading(true);
 
-      // Include credentials because auth is cookie based (JWTs; accessToken, refreshToken, and sessionId)
       const [myRoomsRes, publicRoomsRes] = await Promise.all([
         fetch(`${SERVER_URL}/api/rooms/my-rooms`, { credentials: "include" }),
         fetch(`${SERVER_URL}/api/rooms/public`, { credentials: "include" }),
@@ -59,7 +93,6 @@ export default function Dashboard() {
       setMyRooms(myRoomsData.rooms || []);
       setPublicRooms(publicRoomsData.rooms || []);
       
-      // Set initial filtered rooms based on current view
       setFilteredRooms(viewMode === "public" ? publicRoomsData.rooms || [] : myRoomsData.rooms || []);
     } catch (error) {
       console.error("Error fetching rooms:", error);
@@ -80,7 +113,6 @@ export default function Dashboard() {
   };
 
   const filterRooms = (query: string, mode: RoomMode | "all") => {
-    // Get the current room set based on view mode
     const currentRooms = viewMode === "public" ? publicRooms : myRooms;
     
     if (!currentRooms || currentRooms.length === 0) {
@@ -90,12 +122,10 @@ export default function Dashboard() {
 
     let filtered = [...currentRooms];
 
-    // Filter by mode
     if (mode !== "all") {
       filtered = filtered.filter((room) => room.mode === mode);
     }
 
-    // Filter by search query
     if (query.trim()) {
       const lowerQuery = query.toLowerCase();
       filtered = filtered.filter(
@@ -116,43 +146,37 @@ export default function Dashboard() {
       Math.ceil(target.scrollTop + target.clientHeight) >= target.scrollHeight;
 
     if (
-      (isAtTop && e.deltaY < 0) || // scrolling up at top
-      (isAtBottom && e.deltaY > 0) // scrolling down at bottom
+      (isAtTop && e.deltaY < 0) ||
+      (isAtBottom && e.deltaY > 0)
     ) {
-      // Let scroll pass to parent
       return;
     }
 
-    // Prevent parent scroll
     e.stopPropagation();
   };
 
   const handleViewToggle = (view: "public" | "my") => {
     setViewMode(view);
-    // Reset filters when switching views
     setSelectedMode("all");
     setSearchQuery("");
   };
 
   return (
     <ProtectedRoute>
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900">
+    <div className="min-h-screen">
       {/* Header */}
-      <header className="sticky top-0 z-40 backdrop-blur-lg bg-gray-900/70 border-b border-gray-800">
+      <header className={`sticky top-0 z-40 backdrop-blur-lg ${headerBg} border-b`}>
         <div className="relative">
-          {/* Logout button - positioned absolute to the right */}
           <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
             <LogoutButton />
           </div>
           
-          {/* Main header content - constrained width */}
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-bold text-white">Welcome back! 👋</h1>
+              <h1 className={`text-2xl font-bold ${theme.textColor}`}>Welcome back! 👋</h1>
               <button
                 onClick={() => setIsCreateModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 
-                         text-white rounded-lg transition-colors duration-200"
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-200 ${theme.buttonPrimary}`}
               >
                 <Plus size={20} />
                 Create Room
@@ -170,7 +194,7 @@ export default function Dashboard() {
           onModeChange={handleModeFilter}
         />
 
-        <div className="mt-4 text-sm text-gray-500">
+        <div className={`mt-4 text-sm ${metaText}`}>
           Total rooms: {viewMode === "public" ? publicRooms.length : myRooms.length} | 
           Filtered: {filteredRooms.length} | Mode: {selectedMode}
         </div>
@@ -178,23 +202,22 @@ export default function Dashboard() {
 
       {/* Rooms Section with Toggle */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 pb-12">
-        {/* Toggle and Title Container */}
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-white">
+          <h2 className={`text-xl font-semibold ${theme.textColor}`}>
             {viewMode === "public" ? "Discover Rooms" : "My Rooms"}
-            <span className="ml-2 text-sm text-gray-400">
+            <span className={`ml-2 text-sm ${metaText}`}>
               ({filteredRooms.length} rooms available)
             </span>
           </h2>
           
           {/* Toggle Switch */}
-          <div className="flex items-center gap-3 bg-gray-800/50 backdrop-blur-sm rounded-full p-1">
+          <div className={`flex items-center gap-3 ${containerBg} backdrop-blur-sm rounded-full p-1`}>
             <button
               onClick={() => handleViewToggle("public")}
               className={`px-4 py-2 rounded-full transition-all duration-200 ${
                 viewMode === "public"
-                  ? "bg-purple-600 text-white"
-                  : "text-gray-400 hover:text-gray-300"
+                  ? `${toggleActiveBg} text-white`
+                  : toggleInactiveText
               }`}
             >
               Public Rooms
@@ -203,8 +226,8 @@ export default function Dashboard() {
               onClick={() => handleViewToggle("my")}
               className={`px-4 py-2 rounded-full transition-all duration-200 ${
                 viewMode === "my"
-                  ? "bg-purple-600 text-white"
-                  : "text-gray-400 hover:text-gray-300"
+                  ? `${toggleActiveBg} text-white`
+                  : toggleInactiveText
               }`}
             >
               My Rooms
@@ -214,13 +237,13 @@ export default function Dashboard() {
 
         {/* Scrollable container */}
         <div
-          className="overflow-y-auto max-h-[60vh] pr-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 rounded-lg"
+          className={`overflow-y-auto max-h-[60vh] pr-2 scrollbar-thin ${scrollbarClasses} rounded-lg`}
           onWheel={(e) => handleScrollBubble(e)}
         >
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {[...Array(8)].map((_, i) => (
-                <RoomCardSkeleton key={i} />
+                <RoomCardSkeleton key={i} theme={theme} selectedTheme={selectedTheme} />
               ))}
             </div>
           ) : filteredRooms.length > 0 ? (
@@ -235,7 +258,7 @@ export default function Dashboard() {
             </div>
           ) : (
             <div className="text-center py-12">
-              <p className="text-gray-400">
+              <p className={emptyStateText}>
                 {viewMode === "my" 
                   ? "You haven't created any rooms yet"
                   : selectedMode !== "all"
@@ -260,14 +283,17 @@ export default function Dashboard() {
 }
 
 // Room Card Skeleton Component
-export function RoomCardSkeleton() {
+export function RoomCardSkeleton({ theme, selectedTheme }: { theme: any, selectedTheme: string }) {
+  const skeletonBg = selectedTheme === 'night' ? 'bg-gray-800/90' : 'bg-white/90';
+  const skeletonShimmer = selectedTheme === 'night' ? 'bg-gray-700/50' : 'bg-gray-200/50';
+  
   return (
-    <div className="bg-gray-800/90 rounded-xl h-64 animate-pulse">
-      <div className="h-32 bg-gray-700/50"></div>
+    <div className={`${skeletonBg} rounded-xl h-64 animate-pulse`}>
+      <div className={`h-32 ${skeletonShimmer}`}></div>
       <div className="p-4 space-y-3">
-        <div className="h-5 bg-gray-700/50 rounded w-3/4"></div>
-        <div className="h-4 bg-gray-700/50 rounded w-full"></div>
-        <div className="h-4 bg-gray-700/50 rounded w-1/2"></div>
+        <div className={`h-5 ${skeletonShimmer} rounded w-3/4`}></div>
+        <div className={`h-4 ${skeletonShimmer} rounded w-full`}></div>
+        <div className={`h-4 ${skeletonShimmer} rounded w-1/2`}></div>
       </div>
     </div>
   );
