@@ -35,7 +35,7 @@ const displayTheme = TIME_THEMES[selectedTheme];
 
 
   return (
-    <div className="absolute top-4 right-4">
+    <div className="absolute top-4 left-4">
       <div className="relative inline-block text-left">
         <button
           onClick={() => setIsOpen(!isOpen)}

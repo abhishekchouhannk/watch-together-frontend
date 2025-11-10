@@ -16,14 +16,14 @@ export default function ThemeSelectorOverlay() {
 
   const pathname = usePathname();
 
-  // Only show on "/" or "/auth"
-  if (pathname !== "/" && pathname !== "/auth") {
-    return null;
-  }
+  // // Only show on "/" or "/auth"
+  // if (pathname !== "/" && pathname !== "/auth") {
+  //   return null;
+  // }
 
   return (
     <div
-      className="fixed top-2 right-2 z-[9999] pointer-events-auto"
+      className="fixed z-[9999] pointer-events-auto"
       style={{ isolation: "isolate" }}
     >
       {/* Pass in the setter from context */}
