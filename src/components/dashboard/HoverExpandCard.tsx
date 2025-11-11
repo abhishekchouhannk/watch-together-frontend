@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 
+type ExpansionDirection = "down" | "right";
+
 export default function HoverExpandCard({
   children,
 }: {
@@ -9,11 +11,28 @@ export default function HoverExpandCard({
 }) {
   const [hovered, setHovered] = useState(false);
   const [rect, setRect] = useState<DOMRect | null>(null);
+  const [direction, setDirection] = useState<ExpansionDirection>("down");
   const cardRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (hovered && cardRef.current) {
-      setRect(cardRef.current.getBoundingClientRect());
+      const cardRect = cardRef.current.getBoundingClientRect();
+      setRect(cardRect);
+
+      // Calculate available space below
+      const viewportHeight = window.innerHeight;
+      const spaceBelow = viewportHeight - cardRect.bottom;
+      
+      // Estimated expanded height (you can adjust this based on your content)
+      const estimatedExpandedHeight = 500; // Approximate height when expanded
+      
+      // If not enough space below (with some padding), expand right
+      if (spaceBelow < estimatedExpandedHeight - cardRect.height + 40) {
+        setDirection("right");
+      } else {
+        setDirection("down");
+      }
     }
   }, [hovered]);
 
@@ -21,14 +40,17 @@ export default function HoverExpandCard({
     if (!hovered || !rect) return;
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (!rect) return;
+      if (!rect || !contentRef.current) return;
 
-      // If the mouse is outside the floating card area → close it
+      const expandedRect = contentRef.current.getBoundingClientRect();
+      const padding = 20;
+
+      // Check if mouse is outside the expanded card area
       if (
-        e.clientX < rect.left - 20 ||
-        e.clientX > rect.right + 20 ||
-        e.clientY < rect.top - 20 ||
-        e.clientY > rect.bottom + 20
+        e.clientX < expandedRect.left - padding ||
+        e.clientX > expandedRect.right + padding ||
+        e.clientY < expandedRect.top - padding ||
+        e.clientY > expandedRect.bottom + padding
       ) {
         setHovered(false);
       }
@@ -37,6 +59,46 @@ export default function HoverExpandCard({
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, [hovered, rect]);
+
+  const getAnimationProps = () => {
+    if (!rect) return {};
+
+    const baseProps = {
+      initial: {
+        top: rect.top,
+        left: rect.left,
+        width: rect.width,
+        height: rect.height,
+        position: "fixed" as const,
+        zIndex: 50,
+      },
+    };
+
+    if (direction === "down") {
+      return {
+        ...baseProps,
+        animate: {
+          top: rect.top - 5,
+          left: rect.left - 5,
+          width: rect.width + 10,
+          height: "auto",
+          scale: 1.01,
+        },
+      };
+    } else {
+      // Right expansion
+      return {
+        ...baseProps,
+        animate: {
+          top: rect.top - 5,
+          left: rect.left - 5,
+          width: rect.width * 2 + 20, // Expand to roughly double width
+          height: rect.height + 10,
+          scale: 1,
+        },
+      };
+    }
+  };
 
   return (
     <>
@@ -59,25 +121,15 @@ export default function HoverExpandCard({
         rect &&
         createPortal(
           <motion.div
+            ref={contentRef}
             onMouseLeave={() => setHovered(false)}
-            initial={{
-              top: rect.top,
-              left: rect.left,
-              width: rect.width,
-              position: "fixed",
-              zIndex: 50,
-            }}
-            animate={{
-              top: rect.top - 5,
-              left: rect.left - 5,
-              width: rect.width + 10,
-              // remove height here — let content decide
-              scale: 1.01,
-            }}
+            {...getAnimationProps()}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
             className="rounded-xl shadow-2xl overflow-visible pointer-events-auto"
           >
-            <div className="w-full h-auto">{children}</div>
+            <div className="w-full h-full" data-expansion-direction={direction}>
+              {children}
+            </div>
           </motion.div>,
           document.body
         )}
