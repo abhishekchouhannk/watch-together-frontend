@@ -9,11 +9,27 @@ export default function HoverExpandCard({
 }) {
   const [hovered, setHovered] = useState(false);
   const [rect, setRect] = useState<DOMRect | null>(null);
+  const [expandDirection, setExpandDirection] = useState<"down" | "right">("down");
   const cardRef = useRef<HTMLDivElement>(null);
+  const floatingRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (hovered && cardRef.current) {
-      setRect(cardRef.current.getBoundingClientRect());
+      const cardRect = cardRef.current.getBoundingClientRect();
+      setRect(cardRect);
+      
+      // Calculate if card would overflow viewport when expanded downward
+      // Estimate expanded height (original height + expansion content ~200-250px)
+      const estimatedExpandedHeight = cardRect.height + 250;
+      const viewportHeight = window.innerHeight;
+      const spaceBelow = viewportHeight - cardRect.bottom;
+      
+      // If not enough space below, expand to the right
+      if (spaceBelow < estimatedExpandedHeight - cardRect.height) {
+        setExpandDirection("right");
+      } else {
+        setExpandDirection("down");
+      }
     }
   }, [hovered]);
 
@@ -23,20 +39,31 @@ export default function HoverExpandCard({
     const handleMouseMove = (e: MouseEvent) => {
       if (!rect) return;
 
-      // If the mouse is outside the floating card area → close it
-      if (
-        e.clientX < rect.left - 20 ||
-        e.clientX > rect.right + 20 ||
-        e.clientY < rect.top - 20 ||
-        e.clientY > rect.bottom + 20
-      ) {
+      // Adjust detection area based on expansion direction
+      let isOutside = false;
+      
+      if (expandDirection === "down") {
+        isOutside = 
+          e.clientX < rect.left - 20 ||
+          e.clientX > rect.right + 20 ||
+          e.clientY < rect.top - 20 ||
+          e.clientY > rect.bottom + 270; // Account for expanded height
+      } else {
+        isOutside = 
+          e.clientX < rect.left - 20 ||
+          e.clientX > rect.right + rect.width + 30 || // Account for side expansion
+          e.clientY < rect.top - 20 ||
+          e.clientY > rect.bottom + 20;
+      }
+
+      if (isOutside) {
         setHovered(false);
       }
     };
 
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [hovered, rect]);
+  }, [hovered, rect, expandDirection]);
 
   return (
     <>
@@ -59,6 +86,7 @@ export default function HoverExpandCard({
         rect &&
         createPortal(
           <motion.div
+            ref={floatingRef}
             onMouseLeave={() => setHovered(false)}
             initial={{
               top: rect.top,
@@ -70,14 +98,15 @@ export default function HoverExpandCard({
             animate={{
               top: rect.top - 5,
               left: rect.left - 5,
-              width: rect.width + 10,
-              // remove height here — let content decide
+              width: expandDirection === "right" ? rect.width * 2 + 20 : rect.width + 10,
               scale: 1.01,
             }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
             className="rounded-xl shadow-2xl overflow-visible pointer-events-auto"
           >
-            <div className="w-full h-auto">{children}</div>
+            <div className="w-full h-auto" data-expand-direction={expandDirection}>
+              {children}
+            </div>
           </motion.div>,
           document.body
         )}
