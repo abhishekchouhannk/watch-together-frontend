@@ -10,6 +10,7 @@ import { Room, RoomMode } from "@/components/dashboard/types/room";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import LogoutButton from "@/components/auth/LogoutButton";
 import { useTheme } from "@/hooks/useTheme"; // Import the new hook
+import HoverExpandCard from "@/components/dashboard/HoverExpandCard";
 
 const SERVER_URL =
   process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
@@ -232,10 +233,10 @@ export default function Dashboard() {
             onModeChange={handleModeFilter}
           />
 
-          <div className={`mt-4 text-sm ${themeClasses.textMuted}`}>
+          {/* <div className={`mt-4 text-sm ${themeClasses.textMuted}`}>
             Total rooms: {viewMode === "public" ? publicRooms.length : myRooms.length} | 
             Filtered: {filteredRooms.length} | Mode: {selectedMode}
-          </div>
+          </div> */}
         </div>
 
         {/* Rooms Section with Toggle */}
@@ -288,11 +289,9 @@ export default function Dashboard() {
             ) : filteredRooms.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {filteredRooms.map((room) => (
-                  <RoomCard 
-                    key={room.roomId} 
-                    room={room} 
-                    isOwned={viewMode === "my"} 
-                  />
+                  <HoverExpandCard key={room.roomId}>
+      <RoomCard room={room} isOwned={viewMode === "my"} />
+    </HoverExpandCard>
                 ))}
               </div>
             ) : (
