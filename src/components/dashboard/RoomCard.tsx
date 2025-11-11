@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState, useRef } from 'react';
-import { Room } from './types/room';
-import { Users, Lock, Unlock, Play, ArrowRight, Crown } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useTheme } from '@/hooks/useTheme';
+import { useState, useRef } from "react";
+import { Room } from "./types/room";
+import { Users, Lock, Unlock, Play, ArrowRight, Crown } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useTheme } from "@/hooks/useTheme";
 
 interface RoomCardProps {
   room: Room;
@@ -22,76 +22,76 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
   const getThemeClasses = () => {
     const baseClasses = {
       morning: {
-        cardBg: 'bg-orange-800/20',
-        cardBorder: 'border-orange-700/50 hover:border-orange-500/50',
-        headerBg: 'bg-gradient-to-br from-orange-600/20 to-yellow-600/20',
-        text: 'text-orange-900 dark:text-orange-100',
-        textSecondary: 'text-orange-700 dark:text-orange-300',
-        textMuted: 'text-orange-600 dark:text-orange-400',
-        shadow: 'shadow-orange-500/20',
+        cardBg: "bg-orange-800/20",
+        cardBorder: "border-orange-700/50 hover:border-orange-500/50",
+        headerBg: "bg-gradient-to-br from-orange-600/20 to-yellow-600/20",
+        text: "text-orange-900 dark:text-orange-100",
+        textSecondary: "text-orange-700 dark:text-orange-300",
+        textMuted: "text-orange-600 dark:text-orange-400",
+        shadow: "shadow-orange-500/20",
         button: theme.buttonPrimary,
-        buttonIcon: 'text-orange-500 hover:text-orange-400',
-        tagBg: 'bg-orange-700/50',
-        tagText: 'text-orange-200',
-        divider: 'border-orange-700',
-        videoBg: 'bg-black/70',
-        participantBg: 'from-orange-400 to-yellow-400',
-        participantBorder: 'border-orange-900',
-        adminBadge: 'bg-yellow-500/20 text-yellow-400',
+        buttonIcon: "text-orange-500 hover:text-orange-400",
+        tagBg: "bg-orange-700/50",
+        tagText: "text-orange-200",
+        divider: "border-orange-700",
+        videoBg: "bg-black/70",
+        participantBg: "from-orange-400 to-yellow-400",
+        participantBorder: "border-orange-900",
+        adminBadge: "bg-yellow-500/20 text-yellow-400",
       },
       afternoon: {
-        cardBg: 'bg-sky-800/20',
-        cardBorder: 'border-sky-700/50 hover:border-yellow-400/50',
-        headerBg: 'bg-gradient-to-br from-sky-600/20 to-yellow-600/20',
-        text: 'text-sky-900 dark:text-sky-100',
-        textSecondary: 'text-sky-700 dark:text-sky-300',
-        textMuted: 'text-sky-600 dark:text-sky-400',
-        shadow: 'shadow-yellow-500/20',
+        cardBg: "bg-sky-800/20",
+        cardBorder: "border-sky-700/50 hover:border-yellow-400/50",
+        headerBg: "bg-gradient-to-br from-sky-600/20 to-yellow-600/20",
+        text: "text-sky-900 dark:text-sky-100",
+        textSecondary: "text-sky-700 dark:text-sky-300",
+        textMuted: "text-sky-600 dark:text-sky-400",
+        shadow: "shadow-yellow-500/20",
         button: theme.buttonPrimary,
-        buttonIcon: 'text-yellow-400 hover:text-yellow-300',
-        tagBg: 'bg-sky-700/50',
-        tagText: 'text-sky-200',
-        divider: 'border-sky-700',
-        videoBg: 'bg-black/70',
-        participantBg: 'from-sky-400 to-blue-400',
-        participantBorder: 'border-sky-900',
-        adminBadge: 'bg-yellow-400/30 text-yellow-300',
+        buttonIcon: "text-yellow-400 hover:text-yellow-300",
+        tagBg: "bg-sky-700/50",
+        tagText: "text-sky-200",
+        divider: "border-sky-700",
+        videoBg: "bg-black/70",
+        participantBg: "from-sky-400 to-blue-400",
+        participantBorder: "border-sky-900",
+        adminBadge: "bg-yellow-400/30 text-yellow-300",
       },
       evening: {
-        cardBg: 'bg-purple-800/20',
-        cardBorder: 'border-purple-700/50 hover:border-purple-500/50',
-        headerBg: 'bg-gradient-to-br from-purple-600/20 to-pink-600/20',
-        text: 'text-purple-900 dark:text-purple-100',
-        textSecondary: 'text-purple-700 dark:text-purple-300',
-        textMuted: 'text-purple-600 dark:text-purple-400',
-        shadow: 'shadow-purple-500/20',
+        cardBg: "bg-purple-800/20",
+        cardBorder: "border-purple-700/50 hover:border-purple-500/50",
+        headerBg: "bg-gradient-to-br from-purple-600/20 to-pink-600/20",
+        text: "text-purple-900 dark:text-purple-100",
+        textSecondary: "text-purple-700 dark:text-purple-300",
+        textMuted: "text-purple-600 dark:text-purple-400",
+        shadow: "shadow-purple-500/20",
         button: theme.buttonPrimary,
-        buttonIcon: 'text-purple-400 hover:text-purple-300',
-        tagBg: 'bg-purple-700/50',
-        tagText: 'text-purple-200',
-        divider: 'border-purple-700',
-        videoBg: 'bg-black/70',
-        participantBg: 'from-purple-400 to-pink-400',
-        participantBorder: 'border-purple-900',
-        adminBadge: 'bg-yellow-500/20 text-yellow-400',
+        buttonIcon: "text-purple-400 hover:text-purple-300",
+        tagBg: "bg-purple-700/50",
+        tagText: "text-purple-200",
+        divider: "border-purple-700",
+        videoBg: "bg-black/70",
+        participantBg: "from-purple-400 to-pink-400",
+        participantBorder: "border-purple-900",
+        adminBadge: "bg-yellow-500/20 text-yellow-400",
       },
       night: {
-        cardBg: 'bg-indigo-800/20',
-        cardBorder: 'border-indigo-700/50 hover:border-indigo-500/50',
-        headerBg: 'bg-gradient-to-br from-indigo-600/20 to-blue-600/20',
-        text: 'text-white',
-        textSecondary: 'text-indigo-300',
-        textMuted: 'text-indigo-400',
-        shadow: 'shadow-indigo-500/20',
+        cardBg: "bg-indigo-800/20",
+        cardBorder: "border-indigo-700/50 hover:border-indigo-500/50",
+        headerBg: "bg-gradient-to-br from-indigo-600/20 to-blue-600/20",
+        text: "text-white",
+        textSecondary: "text-indigo-300",
+        textMuted: "text-indigo-400",
+        shadow: "shadow-indigo-500/20",
         button: theme.buttonPrimary,
-        buttonIcon: 'text-indigo-400 hover:text-indigo-300',
-        tagBg: 'bg-indigo-700/50',
-        tagText: 'text-indigo-200',
-        divider: 'border-indigo-700',
-        videoBg: 'bg-black/70',
-        participantBg: 'from-indigo-400 to-blue-400',
-        participantBorder: 'border-indigo-900',
-        adminBadge: 'bg-yellow-500/20 text-yellow-400',
+        buttonIcon: "text-indigo-400 hover:text-indigo-300",
+        tagBg: "bg-indigo-700/50",
+        tagText: "text-indigo-200",
+        divider: "border-indigo-700",
+        videoBg: "bg-black/70",
+        participantBg: "from-indigo-400 to-blue-400",
+        participantBorder: "border-indigo-900",
+        adminBadge: "bg-yellow-500/20 text-yellow-400",
       },
     };
 
@@ -100,31 +100,34 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
 
   const themeClasses = getThemeClasses();
 
+  const hoverTimeout = useRef<NodeJS.Timeout | null>(null);
+
   const handleMouseEnter = () => {
     setIsHovered(true);
-    if (videoRef.current && room.video?.isPlaying) {
-      videoRef.current.play();
-    }
+    hoverTimeout.current = setTimeout(() => {
+      setIsExpanded(true);
+      if (videoRef.current && room.video?.url) {
+        videoRef.current.play();
+      }
+    }, 500);
   };
 
   const handleMouseLeave = () => {
     setIsHovered(false);
     setIsExpanded(false);
-    if (videoRef.current) {
-      videoRef.current.pause();
-    }
+    if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
+    if (videoRef.current) videoRef.current.pause();
   };
-
   const handleJoinRoom = () => {
     router.push(`/room/${room.roomId}`);
   };
 
   const getModeColor = (mode: string) => {
     const colors = {
-      casual: 'bg-green-500/20 text-green-400 border-green-500/50',
-      entertainment: 'bg-purple-500/20 text-purple-400 border-purple-500/50',
-      gaming: 'bg-red-500/20 text-red-400 border-red-500/50',
-      study: 'bg-blue-500/20 text-blue-400 border-blue-500/50',
+      casual: "bg-green-500/20 text-green-400 border-green-500/50",
+      entertainment: "bg-purple-500/20 text-purple-400 border-purple-500/50",
+      gaming: "bg-red-500/20 text-red-400 border-red-500/50",
+      study: "bg-blue-500/20 text-blue-400 border-blue-500/50",
     };
     return colors[mode as keyof typeof colors] || colors.casual;
   };
@@ -132,34 +135,49 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
   return (
     <div
       className={`relative transition-all duration-500 ease-in-out transform
-                  ${isExpanded ? 'scale-105 z-30' : 'scale-100 z-10'}
-                  ${isHovered ? `shadow-2xl ${themeClasses.shadow}` : 'shadow-lg'}`}
+                  ${isExpanded ? "scale-105 z-30" : "scale-100 z-10"}
+                  ${
+                    isHovered
+                      ? `shadow-2xl ${themeClasses.shadow}`
+                      : "shadow-lg"
+                  }`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className={`${themeClasses.cardBg} backdrop-blur-sm rounded-xl overflow-hidden border 
+      <div
+        className={`${
+          themeClasses.cardBg
+        } backdrop-blur-sm rounded-xl overflow-hidden border 
                        ${themeClasses.cardBorder} transition-all duration-300
-                       ${isExpanded ? 'h-auto' : 'h-64'}`}>
-        
+                       ${isExpanded ? "h-auto" : "h-64"}`}
+      >
         {/* Room Header */}
         <div className={`relative h-32 ${themeClasses.headerBg}`}>
           {room.thumbnail ? (
-            <img 
-              src={room.thumbnail} 
+            <img
+              src={room.thumbnail}
               alt={room.roomName}
               className="w-full h-full object-cover"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <div className="text-4xl">
-                {room.mode === 'gaming' ? '🎮' : room.mode === 'study' ? '📚' : '🎬'}
+                {room.mode === "gaming"
+                  ? "🎮"
+                  : room.mode === "study"
+                  ? "📚"
+                  : "🎬"}
               </div>
             </div>
           )}
-          
+
           {/* Status Indicators */}
           <div className="absolute top-2 left-2 flex gap-2">
-            <span className={`px-2 py-1 text-xs rounded-full border ${getModeColor(room.mode)}`}>
+            <span
+              className={`px-2 py-1 text-xs rounded-full border ${getModeColor(
+                room.mode
+              )}`}
+            >
               {room.mode}
             </span>
             {room.video?.isPlaying && (
@@ -172,15 +190,18 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
 
           {/* Privacy Indicator */}
           <div className="absolute top-2 right-2">
-            {room.isPublic ? 
-              <Unlock size={16} className="text-white/70" /> : 
+            {room.isPublic ? (
+              <Unlock size={16} className="text-white/70" />
+            ) : (
               <Lock size={16} className="text-white/70" />
-            }
+            )}
           </div>
 
           {/* Owner Badge */}
           {isOwned && (
-            <div className={`absolute bottom-2 right-2 ${themeClasses.adminBadge} px-2 py-1 rounded-full flex items-center gap-1`}>
+            <div
+              className={`absolute bottom-2 right-2 ${themeClasses.adminBadge} px-2 py-1 rounded-full flex items-center gap-1`}
+            >
               <Crown size={12} />
               <span className="text-xs">Admin</span>
             </div>
@@ -189,19 +210,25 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
 
         {/* Room Info */}
         <div className="p-4">
-          <h3 className={`text-lg font-semibold ${themeClasses.text} mb-1 truncate`}>
+          <h3
+            className={`text-lg font-semibold ${themeClasses.text} mb-1 truncate`}
+          >
             {room.roomName}
           </h3>
           <p className={`text-sm ${themeClasses.textMuted} mb-3 line-clamp-2`}>
-            {room.description || 'No description'}
+            {room.description || "No description"}
           </p>
-          
+
           <div className="flex items-center justify-between">
-            <div className={`flex items-center gap-2 ${themeClasses.textMuted}`}>
+            <div
+              className={`flex items-center gap-2 ${themeClasses.textMuted}`}
+            >
               <Users size={16} />
-              <span className="text-sm">{room.participants.length}/{room.maxParticipants}</span>
+              <span className="text-sm">
+                {room.participants.length}/{room.maxParticipants}
+              </span>
             </div>
-            
+
             {!isExpanded && (
               <button
                 onClick={handleJoinRoom}
@@ -226,9 +253,11 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
                   muted
                   loop
                 />
-                <div className={`absolute bottom-2 left-2 ${themeClasses.videoBg} px-2 py-1 rounded`}>
+                <div
+                  className={`absolute bottom-2 left-2 ${themeClasses.videoBg} px-2 py-1 rounded`}
+                >
                   <span className="text-xs text-white">
-                    {room.video.isPlaying ? 'Currently Playing' : 'Paused'}
+                    {room.video.isPlaying ? "Currently Playing" : "Paused"}
                   </span>
                 </div>
               </div>
@@ -237,14 +266,16 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
             {/* Participants Preview */}
             <div className="p-4 space-y-3">
               <div className="flex items-center justify-between">
-                <h4 className={`text-sm font-medium ${themeClasses.textSecondary}`}>
+                <h4
+                  className={`text-sm font-medium ${themeClasses.textSecondary}`}
+                >
                   Active Participants
                 </h4>
                 <span className={`text-xs ${themeClasses.textMuted}`}>
                   {/* {new Date(room.createdAt).toLocaleDateString()} */}
                 </span>
               </div>
-              
+
               <div className="flex -space-x-2">
                 {room.participants.slice(0, 5).map((participant) => (
                   <div
@@ -258,8 +289,10 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
                   </div>
                 ))}
                 {room.participants.length > 5 && (
-                  <div className={`w-8 h-8 rounded-full ${themeClasses.cardBg} flex items-center justify-center 
-                                text-xs ${themeClasses.textSecondary} border-2 ${themeClasses.participantBorder}`}>
+                  <div
+                    className={`w-8 h-8 rounded-full ${themeClasses.cardBg} flex items-center justify-center 
+                                text-xs ${themeClasses.textSecondary} border-2 ${themeClasses.participantBorder}`}
+                  >
                     +{room.participants.length - 5}
                   </div>
                 )}
@@ -269,7 +302,10 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
               {room.tags && room.tags.length > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {room.tags.map((tag, idx) => (
-                    <span key={idx} className={`text-xs px-2 py-1 ${themeClasses.tagBg} ${themeClasses.tagText} rounded`}>
+                    <span
+                      key={idx}
+                      className={`text-xs px-2 py-1 ${themeClasses.tagBg} ${themeClasses.tagText} rounded`}
+                    >
                       #{tag}
                     </span>
                   ))}

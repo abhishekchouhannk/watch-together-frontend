@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { Search, X } from 'lucide-react';
-import { debounce } from 'lodash';
+import { debounce } from '@/utils/debounce';
 import { useTheme } from '@/hooks/useTheme';
 
 interface SearchBarProps {
