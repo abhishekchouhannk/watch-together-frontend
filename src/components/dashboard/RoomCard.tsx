@@ -1,10 +1,12 @@
+// RoomCard.tsx
 "use client";
 
 import { useState, useRef, useEffect } from "react";
 import { Room } from "./types/room";
-import { Users, Lock, Unlock, Play, ArrowRight, Crown } from "lucide-react";
+import { Users, Lock, Unlock, Play, ArrowRight, Crown, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "@/hooks/useTheme";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface RoomCardProps {
   room: Room;
@@ -17,19 +19,37 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [expandDirection, setExpandDirection] = useState<"down" | "right">("down");
+  const [isLoading, setIsLoading] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const hoverTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Detect expansion direction from parent
   useEffect(() => {
-    if (cardRef.current) {
-      const parent = cardRef.current.closest('[data-expand-direction]');
-      if (parent) {
-        const direction = parent.getAttribute('data-expand-direction') as "down" | "right";
-        setExpandDirection(direction || "down");
+    const checkDirection = () => {
+      if (cardRef.current) {
+        const parent = cardRef.current.closest('[data-expand-direction]');
+        if (parent) {
+          const direction = parent.getAttribute('data-expand-direction') as "down" | "right";
+          if (direction && direction !== expandDirection) {
+            setExpandDirection(direction);
+          }
+        }
       }
+    };
+
+    checkDirection();
+    // Use MutationObserver to detect when parent changes
+    const observer = new MutationObserver(checkDirection);
+    if (cardRef.current?.parentElement) {
+      observer.observe(cardRef.current.parentElement, { 
+        attributes: true, 
+        attributeFilter: ['data-expand-direction'] 
+      });
     }
-  }, [isExpanded]);
+
+    return () => observer.disconnect();
+  }, [expandDirection]);
 
   // Theme-specific classes
   const getThemeClasses = () => {
@@ -51,6 +71,7 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
         participantBg: "from-orange-400 to-yellow-400",
         participantBorder: "border-orange-900",
         adminBadge: "bg-yellow-500/20 text-yellow-400",
+        loadingBg: "bg-orange-600/30",
       },
       afternoon: {
         cardBg: "bg-sky-800/20",
@@ -69,6 +90,7 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
         participantBg: "from-sky-400 to-blue-400",
         participantBorder: "border-sky-900",
         adminBadge: "bg-yellow-400/30 text-yellow-300",
+        loadingBg: "bg-sky-600/30",
       },
       evening: {
         cardBg: "bg-purple-800/20",
@@ -87,6 +109,7 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
         participantBg: "from-purple-400 to-pink-400",
         participantBorder: "border-purple-900",
         adminBadge: "bg-yellow-500/20 text-yellow-400",
+        loadingBg: "bg-purple-600/30",
       },
       night: {
         cardBg: "bg-indigo-800/20",
@@ -105,34 +128,42 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
         participantBg: "from-indigo-400 to-blue-400",
         participantBorder: "border-indigo-900",
         adminBadge: "bg-yellow-500/20 text-yellow-400",
+        loadingBg: "bg-indigo-600/30",
       },
     };
 
-    return baseClasses[theme.name as keyof typeof baseClasses];
+    return baseClasses[theme.name as keyof typeof baseClasses] || baseClasses.night;
   };
 
   const themeClasses = getThemeClasses();
 
-  const hoverTimeout = useRef<NodeJS.Timeout | null>(null);
-
   const handleMouseEnter = () => {
     setIsHovered(true);
+    if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
+    
     hoverTimeout.current = setTimeout(() => {
-      setIsExpanded(true);
-      if (videoRef.current && room.video?.url) {
-        videoRef.current.play();
-      }
-    }, 500);
+      setIsLoading(true);
+      // Simulate loading delay for smooth transition
+      setTimeout(() => {
+        setIsExpanded(true);
+        setIsLoading(false);
+        if (videoRef.current && room.video?.url) {
+          videoRef.current.play().catch(() => {});
+        }
+      }, 300);
+    }, 400);
   };
 
   const handleMouseLeave = () => {
     setIsHovered(false);
     setIsExpanded(false);
+    setIsLoading(false);
     if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
     if (videoRef.current) videoRef.current.pause();
   };
 
-  const handleJoinRoom = () => {
+  const handleJoinRoom = (e: React.MouseEvent) => {
+    e.stopPropagation();
     router.push(`/room/${room.roomId}`);
   };
 
@@ -146,9 +177,112 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
     return colors[mode as keyof typeof colors] || colors.casual;
   };
 
-  // Expanded content component (reusable for both directions)
+  // Main card content component
+  const MainCardContent = ({ isInExpandedView = false }: { isInExpandedView?: boolean }) => (
+    <div className={`${isInExpandedView && expandDirection === "right" && isExpanded ? "w-1/2 flex-shrink-0" : "w-full"}`}>
+      {/* Room Header */}
+      <div className={`relative h-32 ${themeClasses.headerBg}`}>
+        {room.thumbnail ? (
+          <img
+            src={room.thumbnail}
+            alt={room.roomName}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <div className="text-4xl">
+              {room.mode === "gaming"
+                ? "🎮"
+                : room.mode === "study"
+                ? "📚"
+                : "🎬"}
+            </div>
+          </div>
+        )}
+
+        {/* Status Indicators */}
+        <div className="absolute top-2 left-2 flex gap-2">
+          <span
+            className={`px-2 py-1 text-xs rounded-full border ${getModeColor(
+              room.mode
+            )}`}
+          >
+            {room.mode}
+          </span>
+          {room.video?.isPlaying && (
+            <span className="px-2 py-1 text-xs bg-red-500/80 text-white rounded-full flex items-center gap-1">
+              <Play size={10} fill="white" />
+              LIVE
+            </span>
+          )}
+        </div>
+
+        {/* Privacy Indicator */}
+        <div className="absolute top-2 right-2">
+          {room.isPublic ? (
+            <Unlock size={16} className="text-white/70" />
+          ) : (
+            <Lock size={16} className="text-white/70" />
+          )}
+        </div>
+
+        {/* Owner Badge */}
+        {isOwned && (
+          <div
+            className={`absolute bottom-2 right-2 ${themeClasses.adminBadge} px-2 py-1 rounded-full flex items-center gap-1`}
+          >
+            <Crown size={12} />
+            <span className="text-xs">Admin</span>
+          </div>
+        )}
+      </div>
+
+      {/* Room Info */}
+      <div className="p-4">
+        <h3
+          className={`text-lg font-semibold ${themeClasses.text} mb-1 truncate`}
+        >
+          {room.roomName}
+        </h3>
+        <p className={`text-sm ${themeClasses.textMuted} mb-3 line-clamp-2`}>
+          {room.description || "No description"}
+        </p>
+
+        <div className="flex items-center justify-between">
+          <div
+            className={`flex items-center gap-2 ${themeClasses.textMuted}`}
+          >
+            <Users size={16} />
+            <span className="text-sm">
+              {room.participants.length}/{room.maxParticipants}
+            </span>
+          </div>
+
+          {!isExpanded && !isLoading && (
+            <button
+              onClick={handleJoinRoom}
+              className={`${themeClasses.buttonIcon} transition-colors`}
+            >
+              <ArrowRight size={20} />
+            </button>
+          )}
+          
+          {isLoading && (
+            <Loader2 size={20} className={`${themeClasses.textMuted} animate-spin`} />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  // Expanded content component
   const ExpandedContent = () => (
-    <div className={`${expandDirection === "right" ? "" : `border-t ${themeClasses.divider}`} animate-slideIn`}>
+    <motion.div 
+      initial={{ opacity: 0, x: expandDirection === "right" ? -10 : 0, y: expandDirection === "down" ? -10 : 0 }}
+      animate={{ opacity: 1, x: 0, y: 0 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      className={`${expandDirection === "right" ? `border-l ${themeClasses.divider}` : `border-t ${themeClasses.divider}`}`}
+    >
       {/* Video Preview */}
       {room.video?.url && (
         <div className={`relative ${expandDirection === "right" ? "h-32" : "h-48"} bg-black`}>
@@ -158,6 +292,7 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
             className="w-full h-full object-contain"
             muted
             loop
+            playsInline
           />
           <div
             className={`absolute bottom-2 left-2 ${themeClasses.videoBg} px-2 py-1 rounded`}
@@ -177,9 +312,6 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
           >
             Active Participants
           </h4>
-          <span className={`text-xs ${themeClasses.textMuted}`}>
-            {/* {new Date(room.createdAt).toLocaleDateString()} */}
-          </span>
         </div>
 
         <div className="flex -space-x-2">
@@ -232,169 +364,59 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
                      rounded-lg transition-colors duration-200 border ${themeClasses.cardBorder}`}
             onClick={(e) => {
               e.stopPropagation();
-              // Add to favorites or preview more
             }}
           >
             ⭐
           </button>
         </div>
       </div>
-    </div>
+    </motion.div>
+  );
+
+  // Loading placeholder for right expansion
+  const LoadingPlaceholder = () => (
+    <motion.div 
+      initial={{ opacity: 0, width: 0 }}
+      animate={{ opacity: 1, width: "50%" }}
+      transition={{ duration: 0.3 }}
+      className={`border-l ${themeClasses.divider} ${themeClasses.loadingBg} flex items-center justify-center`}
+    >
+      <Loader2 size={32} className={`${themeClasses.textMuted} animate-spin`} />
+    </motion.div>
   );
 
   return (
     <div
       ref={cardRef}
-      className={`relative transition-all duration-500 ease-in-out transform
-                  ${isExpanded ? "scale-105 z-30" : "scale-100 z-10"}
-                  ${
-                    isHovered
-                      ? `shadow-2xl ${themeClasses.shadow}`
-                      : "shadow-lg"
-                  }`}
+      className={`relative transition-all duration-300 ease-out transform
+                  ${isHovered ? `shadow-2xl ${themeClasses.shadow}` : "shadow-lg"}`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
       <div
         className={`${themeClasses.cardBg} backdrop-blur-sm rounded-xl overflow-hidden border 
                    ${themeClasses.cardBorder} transition-all duration-300
-                   ${isExpanded && expandDirection === "right" ? "flex" : ""}
-                   ${isExpanded ? "h-auto" : "h-64"}`}
+                   ${(isExpanded || isLoading) && expandDirection === "right" ? "flex" : ""}
+                   ${isExpanded && expandDirection === "down" ? "h-auto" : "h-64"}`}
       >
-        {/* Main Card Content */}
-        <div className={`${isExpanded && expandDirection === "right" ? "w-1/2 flex-shrink-0" : "w-full"}`}>
-          {/* Room Header */}
-          <div className={`relative h-32 ${themeClasses.headerBg}`}>
-            {room.thumbnail ? (
-              <img
-                src={room.thumbnail}
-                alt={room.roomName}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <div className="text-4xl">
-                  {room.mode === "gaming"
-                    ? "🎮"
-                    : room.mode === "study"
-                    ? "📚"
-                    : "🎬"}
-                </div>
-              </div>
-            )}
-
-            {/* Status Indicators */}
-            <div className="absolute top-2 left-2 flex gap-2">
-              <span
-                className={`px-2 py-1 text-xs rounded-full border ${getModeColor(
-                  room.mode
-                )}`}
-              >
-                {room.mode}
-              </span>
-              {room.video?.isPlaying && (
-                <span className="px-2 py-1 text-xs bg-red-500/80 text-white rounded-full flex items-center gap-1">
-                  <Play size={10} fill="white" />
-                  LIVE
-                </span>
-              )}
-            </div>
-
-            {/* Privacy Indicator */}
-            <div className="absolute top-2 right-2">
-              {room.isPublic ? (
-                <Unlock size={16} className="text-white/70" />
-              ) : (
-                <Lock size={16} className="text-white/70" />
-              )}
-            </div>
-
-            {/* Owner Badge */}
-            {isOwned && (
-              <div
-                className={`absolute bottom-2 right-2 ${themeClasses.adminBadge} px-2 py-1 rounded-full flex items-center gap-1`}
-              >
-                <Crown size={12} />
-                <span className="text-xs">Admin</span>
-              </div>
-            )}
-          </div>
-
-          {/* Room Info */}
-          <div className="p-4">
-            <h3
-              className={`text-lg font-semibold ${themeClasses.text} mb-1 truncate`}
-            >
-              {room.roomName}
-            </h3>
-            <p className={`text-sm ${themeClasses.textMuted} mb-3 line-clamp-2`}>
-              {room.description || "No description"}
-            </p>
-
-            <div className="flex items-center justify-between">
-              <div
-                className={`flex items-center gap-2 ${themeClasses.textMuted}`}
-              >
-                <Users size={16} />
-                <span className="text-sm">
-                  {room.participants.length}/{room.maxParticipants}
-                </span>
-              </div>
-
-              {!isExpanded && (
-                <button
-                  onClick={handleJoinRoom}
-                  className={`${themeClasses.buttonIcon} transition-colors`}
-                >
-                  <ArrowRight size={20} />
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Expanded Preview Section */}
-        {isExpanded && expandDirection === "down" && <ExpandedContent />}
+        <MainCardContent isInExpandedView={isExpanded || isLoading} />
         
-        {/* Right-side expanded content */}
-        {isExpanded && expandDirection === "right" && (
-          <div className={`w-1/2 border-l ${themeClasses.divider} animate-slideRight`}>
-            <ExpandedContent />
-          </div>
-        )}
+        {/* Loading state for right expansion */}
+        {isLoading && expandDirection === "right" && <LoadingPlaceholder />}
+        
+        {/* Expanded content */}
+        <AnimatePresence>
+          {isExpanded && (
+            expandDirection === "down" ? (
+              <ExpandedContent />
+            ) : (
+              <div className="w-1/2">
+                <ExpandedContent />
+              </div>
+            )
+          )}
+        </AnimatePresence>
       </div>
-
-      <style jsx>{`
-        @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        @keyframes slideRight {
-          from {
-            opacity: 0;
-            transform: translateX(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-        .animate-slideDown {
-          animation: slideDown 0.3s ease-out;
-        }
-        .animate-slideRight {
-          animation: slideRight 0.3s ease-out;
-        }
-        .animate-slideIn {
-          animation: ${expandDirection === "right" ? "slideRight" : "slideDown"} 0.3s ease-out;
-        }
-      `}</style>
     </div>
   );
 }
