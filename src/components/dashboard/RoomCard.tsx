@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Room } from "./types/room";
-import { Users, Lock, Unlock, Play, ArrowRight, Crown } from "lucide-react";
+import { Users, Lock, Unlock, Play, ArrowRight, Crown, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "@/hooks/useTheme";
 
@@ -17,8 +17,10 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [expandDirection, setExpandDirection] = useState<"down" | "right">("down");
+  const [isLoadingExpanded, setIsLoadingExpanded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const hoverDelayRef = useRef<NodeJS.Timeout | null>(null);
 
   // Detect expansion direction from parent
   useEffect(() => {
@@ -29,7 +31,7 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
         setExpandDirection(direction || "down");
       }
     }
-  }, [isExpanded]);
+  }, []);
 
   // Theme-specific classes
   const getThemeClasses = () => {
@@ -113,23 +115,40 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
 
   const themeClasses = getThemeClasses();
 
-  const hoverTimeout = useRef<NodeJS.Timeout | null>(null);
-
   const handleMouseEnter = () => {
     setIsHovered(true);
-    hoverTimeout.current = setTimeout(() => {
-      setIsExpanded(true);
-      if (videoRef.current && room.video?.url) {
-        videoRef.current.play();
-      }
-    }, 500);
+    
+    // Delay expansion to avoid flickering
+    hoverDelayRef.current = setTimeout(() => {
+      setIsLoadingExpanded(true);
+      
+      // Simulate content loading for smooth transition
+      setTimeout(() => {
+        setIsExpanded(true);
+        setIsLoadingExpanded(false);
+        
+        // Play video after expansion
+        if (videoRef.current && room.video?.url) {
+          videoRef.current.play().catch(() => {
+            // Silently handle autoplay failures
+          });
+        }
+      }, 150);
+    }, 400);
   };
 
   const handleMouseLeave = () => {
     setIsHovered(false);
     setIsExpanded(false);
-    if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
-    if (videoRef.current) videoRef.current.pause();
+    setIsLoadingExpanded(false);
+    
+    if (hoverDelayRef.current) {
+      clearTimeout(hoverDelayRef.current);
+    }
+    
+    if (videoRef.current) {
+      videoRef.current.pause();
+    }
   };
 
   const handleJoinRoom = () => {
@@ -148,7 +167,7 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
 
   // Expanded content component (reusable for both directions)
   const ExpandedContent = () => (
-    <div className={`${expandDirection === "right" ? "" : `border-t ${themeClasses.divider}`} animate-slideIn`}>
+    <div className={`overflow-hidden`}>
       {/* Video Preview */}
       {room.video?.url && (
         <div className={`relative ${expandDirection === "right" ? "h-32" : "h-48"} bg-black`}>
@@ -158,6 +177,7 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
             className="w-full h-full object-contain"
             muted
             loop
+            playsInline
           />
           <div
             className={`absolute bottom-2 left-2 ${themeClasses.videoBg} px-2 py-1 rounded`}
@@ -177,9 +197,6 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
           >
             Active Participants
           </h4>
-          <span className={`text-xs ${themeClasses.textMuted}`}>
-            {/* {new Date(room.createdAt).toLocaleDateString()} */}
-          </span>
         </div>
 
         <div className="flex -space-x-2">
@@ -207,7 +224,7 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
         {/* Tags */}
         {room.tags && room.tags.length > 0 && (
           <div className="flex flex-wrap gap-1">
-            {room.tags.map((tag, idx) => (
+            {room.tags.slice(0, expandDirection === "right" ? 3 : 5).map((tag, idx) => (
               <span
                 key={idx}
                 className={`text-xs px-2 py-1 ${themeClasses.tagBg} ${themeClasses.tagText} rounded`}
@@ -215,6 +232,11 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
                 #{tag}
               </span>
             ))}
+            {room.tags.length > (expandDirection === "right" ? 3 : 5) && (
+              <span className={`text-xs px-2 py-1 ${themeClasses.textMuted}`}>
+                +{room.tags.length - (expandDirection === "right" ? 3 : 5)} more
+              </span>
+            )}
           </div>
         )}
 
@@ -232,7 +254,6 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
                      rounded-lg transition-colors duration-200 border ${themeClasses.cardBorder}`}
             onClick={(e) => {
               e.stopPropagation();
-              // Add to favorites or preview more
             }}
           >
             ⭐
@@ -245,8 +266,7 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
   return (
     <div
       ref={cardRef}
-      className={`relative transition-all duration-500 ease-in-out transform
-                  ${isExpanded ? "scale-105 z-30" : "scale-100 z-10"}
+      className={`relative transition-all duration-300 ease-in-out
                   ${
                     isHovered
                       ? `shadow-2xl ${themeClasses.shadow}`
@@ -261,8 +281,11 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
                    ${isExpanded && expandDirection === "right" ? "flex" : ""}
                    ${isExpanded ? "h-auto" : "h-64"}`}
       >
-        {/* Main Card Content */}
-        <div className={`${isExpanded && expandDirection === "right" ? "w-1/2 flex-shrink-0" : "w-full"}`}>
+        {/* Main Card Content - Fixed width for right expansion */}
+        <div 
+          className={`${isExpanded && expandDirection === "right" ? "flex-shrink-0" : "w-full"}`}
+          style={isExpanded && expandDirection === "right" ? { width: 'calc(50% - 5px)' } : {}}
+        >
           {/* Room Header */}
           <div className={`relative h-32 ${themeClasses.headerBg}`}>
             {room.thumbnail ? (
@@ -353,14 +376,33 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
           </div>
         </div>
 
-        {/* Expanded Preview Section */}
-        {isExpanded && expandDirection === "down" && <ExpandedContent />}
-        
-        {/* Right-side expanded content */}
-        {isExpanded && expandDirection === "right" && (
-          <div className={`w-1/2 border-l ${themeClasses.divider} animate-slideRight`}>
+        {/* Expanded Preview Section - Downward */}
+        {isExpanded && expandDirection === "down" && (
+          <div className={`border-t ${themeClasses.divider} animate-slideDown`}>
             <ExpandedContent />
           </div>
+        )}
+        
+        {/* Right-side expanded content with loading state */}
+        {expandDirection === "right" && (
+          <>
+            {isLoadingExpanded && (
+              <div 
+                className={`flex-shrink-0 border-l ${themeClasses.divider} flex items-center justify-center`}
+                style={{ width: 'calc(50% - 5px)' }}
+              >
+                <Loader2 className={`animate-spin ${themeClasses.textMuted}`} size={24} />
+              </div>
+            )}
+            {isExpanded && !isLoadingExpanded && (
+              <div 
+                className={`flex-shrink-0 border-l ${themeClasses.divider} animate-slideRight overflow-hidden`}
+                style={{ width: 'calc(50% - 5px)' }}
+              >
+                <ExpandedContent />
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -368,17 +410,17 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
         @keyframes slideDown {
           from {
             opacity: 0;
-            transform: translateY(-10px);
+            max-height: 0;
           }
           to {
             opacity: 1;
-            transform: translateY(0);
+            max-height: 500px;
           }
         }
         @keyframes slideRight {
           from {
             opacity: 0;
-            transform: translateX(-10px);
+            transform: translateX(-20px);
           }
           to {
             opacity: 1;
@@ -386,13 +428,10 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
           }
         }
         .animate-slideDown {
-          animation: slideDown 0.3s ease-out;
+          animation: slideDown 0.3s ease-out forwards;
         }
         .animate-slideRight {
-          animation: slideRight 0.3s ease-out;
-        }
-        .animate-slideIn {
-          animation: ${expandDirection === "right" ? "slideRight" : "slideDown"} 0.3s ease-out;
+          animation: slideRight 0.3s ease-out forwards;
         }
       `}</style>
     </div>
