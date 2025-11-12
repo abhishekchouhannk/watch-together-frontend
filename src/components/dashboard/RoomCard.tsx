@@ -265,13 +265,19 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
                  }`}
     >
       {/* Main Card Content */}
-      <div
-        className={`${
-          showExpanded && isExpanded && expandDirection === "right"
-            ? "w-1/2 flex-shrink-0"
-            : "w-full"
-        }`}
-      >
+      {/* Main Card Content */}
+<div
+  className={`${
+    showExpanded && isExpanded && expandDirection === "right"
+      ? "flex-shrink-0"
+      : "w-full"
+  }`}
+  style={
+    showExpanded && isExpanded && expandDirection === "right"
+      ? { width: `${rect?.width || 0}px` }
+      : undefined
+  }
+>
         {/* Room Header */}
         <div className={`relative h-32 ${themeClasses.headerBg}`}>
           {room.thumbnail ? (
@@ -493,35 +499,36 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
       </div>
 
       {/* Floating expanded card (in portal) */}
-      {isHovered &&
-        rect &&
-        createPortal(
-          <motion.div
-            onMouseLeave={resetHoverState}
-            onWheel={handleWheel}
-            initial={{
-              top: rect.top,
-              left: rect.left,
-              width: rect.width,
-              position: "fixed",
-              zIndex: 50,
-            }}
-            animate={{
-              top: rect.top - 5,
-              left: rect.left - 5,
-              width:
-                expandDirection === "right" && isExpanded
-                  ? rect.width * 1.8 + 10
-                  : rect.width + 10,
-              scale: 1.01,
-            }}
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="rounded-xl overflow-visible pointer-events-auto"
-          >
-            <CardContent showExpanded={true} />
-          </motion.div>,
-          document.body
-        )}
+    {/* Floating expanded card (in portal) */}
+{isHovered &&
+  rect &&
+  createPortal(
+    <motion.div
+      onMouseLeave={resetHoverState}
+      onWheel={handleWheel}
+      initial={{
+        top: rect.top,
+        left: rect.left,
+        width: rect.width,
+        position: "fixed",
+        zIndex: 50,
+      }}
+      animate={{
+        top: rect.top - 5,
+        left: rect.left - (expandDirection === "right" && isExpanded ? 5 : 0),
+        width:
+          expandDirection === "right" && isExpanded
+            ? rect.width * 2
+            : rect.width + 10,
+        scale: 1.01,
+      }}
+      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+      className="rounded-xl overflow-visible pointer-events-auto"
+    >
+      <CardContent showExpanded={true} />
+    </motion.div>,
+    document.body
+  )}
 
       <style jsx>{`
         @keyframes slideDown {
