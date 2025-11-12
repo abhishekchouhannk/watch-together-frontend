@@ -19,9 +19,11 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [rect, setRect] = useState<DOMRect | null>(null);
-  const [expandDirection, setExpandDirection] = useState<"down" | "right">("down");
+  const [expandDirection, setExpandDirection] = useState<"down" | "right">(
+    "down"
+  );
   const [isScrolling, setIsScrolling] = useState(false);
-  
+
   const cardRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -31,22 +33,23 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
   const getThemeClasses = () => {
     const baseClasses = {
       morning: {
-        cardBg: "bg-orange-800/20",
-        cardBorder: "border-orange-700/50 hover:border-orange-500/50",
-        headerBg: "bg-gradient-to-br from-orange-600/20 to-yellow-600/20",
-        text: "text-orange-900 dark:text-orange-100",
-        textSecondary: "text-orange-700 dark:text-orange-300",
-        textMuted: "text-orange-600 dark:text-orange-400",
-        shadow: "shadow-orange-500/20",
-        button: theme.buttonPrimary,
-        buttonIcon: "text-orange-500 hover:text-orange-400",
-        tagBg: "bg-orange-700/50",
-        tagText: "text-orange-200",
-        divider: "border-orange-700",
-        videoBg: "bg-black/70",
-        participantBg: "from-orange-400 to-yellow-400",
-        participantBorder: "border-orange-900",
-        adminBadge: "bg-yellow-500/20 text-yellow-400",
+        cardBg: "bg-white/30",
+        cardBorder: "border-pink-300/70 hover:border-rose-400/80",
+        headerBg: "bg-gradient-to-br from-rose-400/10 to-pink-400/30",
+        text: "text-rose-900",
+        textSecondary: "text-pink-900",
+        textMuted: "text-rose-800/80",
+        shadow: "shadow-pink-200/60",
+        button:
+          "bg-rose-400 hover:bg-rose-500 text-white shadow-md shadow-rose-200/40",
+        buttonIcon: "text-rose-500 hover:text-rose-600",
+        tagBg: "bg-rose-300/60",
+        tagText: "text-stone-800",
+        divider: "border-pink-200",
+        videoBg: "bg-white/40",
+        participantBg: "from-rose-300 to-pink-200",
+        participantBorder: "border-rose-400",
+        adminBadge: "bg-rose-400/30 text-rose-800 font-semibold",
       },
       afternoon: {
         cardBg: "bg-sky-800/20",
@@ -111,28 +114,30 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
 
   // Detect scrolling in parent container
   useEffect(() => {
-    const scrollContainer = cardRef.current?.closest('.overflow-y-auto');
-    
+    const scrollContainer = cardRef.current?.closest(".overflow-y-auto");
+
     const handleScroll = () => {
       if (isHovered) {
         resetHoverState();
       }
-      
+
       setIsScrolling(true);
-      
+
       if (scrollTimeoutRef.current) {
         clearTimeout(scrollTimeoutRef.current);
       }
-      
+
       scrollTimeoutRef.current = setTimeout(() => {
         setIsScrolling(false);
       }, 150);
     };
 
     if (scrollContainer) {
-      scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+      scrollContainer.addEventListener("scroll", handleScroll, {
+        passive: true,
+      });
       return () => {
-        scrollContainer.removeEventListener('scroll', handleScroll);
+        scrollContainer.removeEventListener("scroll", handleScroll);
         if (scrollTimeoutRef.current) {
           clearTimeout(scrollTimeoutRef.current);
         }
@@ -148,15 +153,15 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
       if (!rect) return;
 
       let isOutside = false;
-      
+
       if (expandDirection === "down") {
-        isOutside = 
+        isOutside =
           e.clientX < rect.left - 20 ||
           e.clientX > rect.right + 20 ||
           e.clientY < rect.top - 20 ||
           e.clientY > rect.bottom + 270;
       } else {
-        isOutside = 
+        isOutside =
           e.clientX < rect.left - 20 ||
           e.clientX > rect.right + rect.width + 30 ||
           e.clientY < rect.top - 20 ||
@@ -176,12 +181,12 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
     setIsHovered(false);
     setIsExpanded(false);
     setRect(null);
-    
+
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
       hoverTimeoutRef.current = null;
     }
-    
+
     if (videoRef.current) {
       videoRef.current.pause();
     }
@@ -189,23 +194,23 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
 
   const handleMouseEnter = () => {
     if (isScrolling) return;
-    
+
     if (cardRef.current) {
       const cardRect = cardRef.current.getBoundingClientRect();
       setRect(cardRect);
       setIsHovered(true);
-      
+
       // Calculate expansion direction
       const estimatedExpandedHeight = cardRect.height + 250;
       const viewportHeight = window.innerHeight;
       const spaceBelow = viewportHeight - cardRect.bottom;
-      
+
       if (spaceBelow < estimatedExpandedHeight - cardRect.height) {
         setExpandDirection("right");
       } else {
         setExpandDirection("down");
       }
-      
+
       // Start expansion after delay
       hoverTimeoutRef.current = setTimeout(() => {
         setIsExpanded(true);
@@ -230,23 +235,43 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
     const colors = {
       casual: "bg-green-500/20 text-green-400 border-green-500/50",
       entertainment: "bg-purple-500/20 text-purple-400 border-purple-500/50",
-      gaming: "bg-red-500/20 text-red-400 border-red-500/50",
+      gaming: "bg-red-500/20 text-stone-400 border-red-500/50",
       study: "bg-blue-500/20 text-blue-400 border-blue-500/50",
     };
     return colors[mode as keyof typeof colors] || colors.casual;
   };
 
   // The actual card content
-  const CardContent = ({ showExpanded = false }: { showExpanded?: boolean }) => (
+  const CardContent = ({
+    showExpanded = false,
+  }: {
+    showExpanded?: boolean;
+  }) => (
     <div
-      className={`${themeClasses.cardBg} backdrop-blur-sm rounded-xl overflow-hidden border 
+      className={`${
+        themeClasses.cardBg
+      } backdrop-blur-sm rounded-xl overflow-hidden border 
                  ${themeClasses.cardBorder} transition-all duration-300
-                 ${showExpanded && isExpanded && expandDirection === "right" ? "flex" : ""}
+                 ${
+                   showExpanded && isExpanded && expandDirection === "right"
+                     ? "flex"
+                     : ""
+                 }
                  ${showExpanded && isExpanded ? "h-auto" : "h-64"}
-                 ${showExpanded ? `shadow-2xl ${themeClasses.shadow}` : "shadow-lg"}`}
+                 ${
+                   showExpanded
+                     ? `shadow-2xl ${themeClasses.shadow}`
+                     : "shadow-lg"
+                 }`}
     >
       {/* Main Card Content */}
-      <div className={`${showExpanded && isExpanded && expandDirection === "right" ? "w-1/2 flex-shrink-0" : "w-full"}`}>
+      <div
+        className={`${
+          showExpanded && isExpanded && expandDirection === "right"
+            ? "w-1/2 flex-shrink-0"
+            : "w-full"
+        }`}
+      >
         {/* Room Header */}
         <div className={`relative h-32 ${themeClasses.headerBg}`}>
           {room.thumbnail ? (
@@ -343,10 +368,12 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
           <ExpandedContent />
         </div>
       )}
-      
+
       {/* Right-side expanded content */}
       {showExpanded && isExpanded && expandDirection === "right" && (
-        <div className={`w-1/2 border-l ${themeClasses.divider} animate-slideRight`}>
+        <div
+          className={`w-1/2 border-l ${themeClasses.divider} animate-slideRight`}
+        >
           <ExpandedContent />
         </div>
       )}
@@ -358,7 +385,11 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
     <>
       {/* Video Preview */}
       {room.video?.url && (
-        <div className={`relative ${expandDirection === "right" ? "h-32" : "h-48"} bg-black`}>
+        <div
+          className={`relative ${
+            expandDirection === "right" ? "h-32" : "h-48"
+          } bg-black`}
+        >
           <video
             ref={videoRef}
             src={room.video.url}
@@ -379,9 +410,7 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
       {/* Participants Preview */}
       <div className="p-4 space-y-3">
         <div className="flex items-center justify-between">
-          <h4
-            className={`text-sm font-medium ${themeClasses.textSecondary}`}
-          >
+          <h4 className={`text-sm font-medium ${themeClasses.textSecondary}`}>
             Active Participants
           </h4>
         </div>
@@ -480,7 +509,10 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
             animate={{
               top: rect.top - 5,
               left: rect.left - 5,
-              width: expandDirection === "right" && isExpanded ? rect.width * 2 + 20 : rect.width + 10,
+              width:
+                expandDirection === "right" && isExpanded
+                  ? rect.width * 1.8 + 10
+                  : rect.width + 10,
               scale: 1.01,
             }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}

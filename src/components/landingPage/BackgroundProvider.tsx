@@ -75,7 +75,7 @@ export const BackgroundProvider: React.FC<{ children: React.ReactNode }> = ({
     const timer = setInterval(() => {
       const hour = new Date().getHours();
       setSelectedTheme(getTimeOfDay(hour));
-    }, 60000); // Check every minute
+    }, 600000); // Check every minute
 
     return () => clearInterval(timer);
   }, []);

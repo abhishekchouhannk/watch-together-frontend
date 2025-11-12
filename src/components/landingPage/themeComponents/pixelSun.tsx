@@ -70,12 +70,12 @@ const PixelSun: React.FC<PixelSunProps> = ({
         animationStarted ? "translate-y-0 opacity-100" : "translate-y-[150vh] opacity-0"
       }`}
       style={{
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
+        top: "30%",
+        left: "80%",
+        transform: "translate(0%, 0%)",
         zIndex,
         filter:
-          "drop-shadow(0 0 10px rgba(255, 255, 180, 0.5)) drop-shadow(0 0 40px rgba(255, 230, 150, 0.7)) drop-shadow(0 0 80px rgba(255, 220, 120, 0.8))",
+          "drop-shadow(0 0 5px rgba(255, 255, 180, 0.5)) drop-shadow(0 0 10px rgba(255, 230, 150, 0.7)) drop-shadow(0 0 15px rgba(255, 220, 120, 0.8))",
         transitionDelay: `${animationDelay}ms`,
       }}
     >
@@ -94,13 +94,13 @@ const PixelSun: React.FC<PixelSunProps> = ({
       <style jsx>{`
         @keyframes glowPulse {
           0% {
-            filter: drop-shadow(0 0 8px rgba(255, 255, 190, 0.5));
+            filter: drop-shadow(0 0 2px rgba(255, 255, 190, 0.5));
           }
           50% {
-            filter: drop-shadow(0 0 24px rgba(255, 240, 150, 0.9));
+            filter: drop-shadow(0 0 9px rgba(255, 240, 150, 0.9));
           }
           100% {
-            filter: drop-shadow(0 0 8px rgba(255, 255, 190, 0.5));
+            filter: drop-shadow(0 0 2px rgba(255, 255, 190, 0.5));
           }
         }
       `}</style>

@@ -30,22 +30,27 @@ export default function CreateRoomModal({ isOpen, onClose, onRoomCreated }: Crea
   const getThemeClasses = () => {
     const baseClasses = {
       morning: {
-        modalBg: 'bg-orange-50 dark:bg-orange-950/95',
-        border: 'border-orange-200 dark:border-orange-800',
-        inputBg: 'bg-orange-100 dark:bg-orange-900/50',
-        inputBorder: 'border-orange-300 dark:border-orange-700',
-        inputFocus: 'focus:border-orange-500',
-        text: 'text-orange-900 dark:text-orange-100',
-        textSecondary: 'text-orange-700 dark:text-orange-300',
-        textMuted: 'text-orange-600 dark:text-orange-400',
-        closeButton: 'text-orange-600 hover:text-orange-800 dark:text-orange-400 dark:hover:text-orange-200',
-        primaryButton: theme.buttonPrimary,
-        secondaryButton: 'bg-orange-200 hover:bg-orange-300 text-orange-900 dark:bg-orange-800/50 dark:hover:bg-orange-700/50 dark:text-orange-100',
-        tagBg: 'bg-orange-200 dark:bg-orange-800/50',
-        tagText: 'text-orange-800 dark:text-orange-200',
-        modeActive: 'bg-orange-500 border-orange-500 text-white',
-        modeInactive: 'bg-orange-100 border-orange-300 text-orange-600 hover:border-orange-400 dark:bg-orange-900/30 dark:border-orange-700 dark:text-orange-400',
-      },
+  modalBg: 'bg-pink-200/90 backdrop-blur-lg',
+  border: 'border-pink-400 dark:border-rose-700/70',
+  inputBg: 'bg-white/20 dark:bg-white/20',
+  inputBorder: 'border-pink-300 dark:border-rose-400/30',
+  inputFocus: 'focus:border-rose-800',
+  text: 'text-rose-900 dark:text-rose-800',
+  textSecondary: 'text-rose-800 dark:text-rose-800',
+  textMuted: 'text-rose-700 dark:text-rose-700',
+  closeButton:
+    'text-rose-500 hover:text-rose-700 dark:text-rose-700 dark:hover:text-rose-100 transition-colors',
+  primaryButton:
+    'bg-rose-800 hover:bg-rose-900 text-white shadow-md shadow-pink-200/40',
+  secondaryButton:
+    'bg-white/20 hover:bg-white/40 text-rose-900',
+  tagBg: 'bg-rose-200/80 dark:bg-rose-600/20',
+  tagText: 'text-rose-900 dark:text-rose-900',
+  modeActive: 'bg-rose-800 border-rose-300 text-white',
+  modeInactive:
+    'bg-white/20 border-rose-300 text-rose-700 hover:border-rose-400',
+},
+
       afternoon: {
         modalBg: 'bg-sky-50 dark:bg-sky-950/95',
         border: 'border-sky-200 dark:border-sky-800',
