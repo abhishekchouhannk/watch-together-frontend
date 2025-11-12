@@ -244,8 +244,10 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
   // The actual card content
   const CardContent = ({
     showExpanded = false,
+    originalWidth,
   }: {
     showExpanded?: boolean;
+    originalWidth?: number;
   }) => (
     <div
       className={`${
@@ -264,13 +266,19 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
                      : "shadow-lg"
                  }`}
     >
+
       {/* Main Card Content */}
       <div
         className={`${
           showExpanded && isExpanded && expandDirection === "right"
-            ? "w-1/2 flex-shrink-0"
+            ? "flex-shrink-0"
             : "w-full"
         }`}
+        style={
+          showExpanded && isExpanded && expandDirection === "right" && originalWidth
+            ? { width: `${originalWidth}px` }
+            : {}
+        }
       >
         {/* Room Header */}
         <div className={`relative h-32 ${themeClasses.headerBg}`}>
@@ -372,7 +380,10 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
       {/* Right-side expanded content */}
       {showExpanded && isExpanded && expandDirection === "right" && (
         <div
-          className={`w-1/2 border-l ${themeClasses.divider} animate-slideRight`}
+          className={`border-l ${themeClasses.divider} animate-slideRight overflow-hidden`}
+          style={{ 
+            width: originalWidth ? `${originalWidth * 0.8}px` : '40%',
+          }}
         >
           <ExpandedContent />
         </div>
@@ -492,7 +503,7 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
         )}
       </div>
 
-      {/* Floating expanded card (in portal) */}
+     {/* Floating expanded card (in portal) */}
       {isHovered &&
         rect &&
         createPortal(
@@ -508,7 +519,7 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
             }}
             animate={{
               top: rect.top - 5,
-              left: rect.left - 5,
+              left: rect.left,
               width:
                 expandDirection === "right" && isExpanded
                   ? rect.width * 1.8 + 10
@@ -518,7 +529,8 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
             className="rounded-xl overflow-visible pointer-events-auto"
           >
-            <CardContent showExpanded={true} />
+            {/* Pass originalWidth to CardContent */}
+            <CardContent showExpanded={true} originalWidth={rect.width} />
           </motion.div>,
           document.body
         )}
@@ -537,11 +549,11 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
         @keyframes slideRight {
           from {
             opacity: 0;
-            transform: translateX(-10px);
+            transform: scaleX(0);
           }
           to {
             opacity: 1;
-            transform: translateX(0);
+            transform: scaleX(1);
           }
         }
         .animate-slideDown {
@@ -549,6 +561,7 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
         }
         .animate-slideRight {
           animation: slideRight 0.3s ease-out;
+          transform-origin: left center;
         }
       `}</style>
     </>
