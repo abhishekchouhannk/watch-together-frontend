@@ -529,35 +529,6 @@ export default function RoomCard({ room, isOwned = false }: RoomCardProps) {
     </motion.div>,
     document.body
   )}
-
-      <style jsx>{`
-        @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        @keyframes slideRight {
-          from {
-            opacity: 0;
-            transform: translateX(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-        .animate-slideDown {
-          animation: slideDown 0.3s ease-out;
-        }
-        .animate-slideRight {
-          animation: slideRight 0.3s ease-out;
-        }
-      `}</style>
     </>
   );
 }
