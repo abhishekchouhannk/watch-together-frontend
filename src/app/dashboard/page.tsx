@@ -275,38 +275,36 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Scrollable container */}
-          <div
-            className={`overflow-y-auto max-h-[60vh] pr-2 scrollbar-thin ${themeClasses.scrollbar} rounded-lg`}
-            onWheel={(e) => handleScrollBubble(e)}
-          >
-            {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {[...Array(8)].map((_, i) => (
-                  <RoomCardSkeleton key={i} theme={themeClasses} />
-                ))}
-              </div>
-            ) : filteredRooms.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {filteredRooms.map((room) => (
-                  <HoverExpandCard key={room.roomId}>
-      <RoomCard room={room} isOwned={viewMode === "my"} />
-    </HoverExpandCard>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <p className={themeClasses.textSecondary}>
-                  {viewMode === "my" 
-                    ? "You haven't created any rooms yet"
-                    : selectedMode !== "all"
-                      ? `No ${selectedMode} rooms found`
-                      : "No rooms found matching your criteria"
-                  }
-                </p>
-              </div>
-            )}
-          </div>
+         {/* Scrollable container */}
+<div
+  className={`overflow-y-auto max-h-[60vh] pr-2 scrollbar-thin ${themeClasses.scrollbar} rounded-lg`}
+  onWheel={(e) => handleScrollBubble(e)}
+>
+  {isLoading ? (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      {[...Array(8)].map((_, i) => (
+        <RoomCardSkeleton key={i} theme={themeClasses} />
+      ))}
+    </div>
+  ) : filteredRooms.length > 0 ? (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      {filteredRooms.map((room) => (
+        <RoomCard key={room.roomId} room={room} isOwned={viewMode === "my"} />
+      ))}
+    </div>
+  ) : (
+    <div className="text-center py-12">
+      <p className={themeClasses.textSecondary}>
+        {viewMode === "my" 
+          ? "You haven't created any rooms yet"
+          : selectedMode !== "all"
+            ? `No ${selectedMode} rooms found`
+            : "No rooms found matching your criteria"
+        }
+      </p>
+    </div>
+  )}
+</div>
         </section>
 
         {/* Create Room Modal */}
