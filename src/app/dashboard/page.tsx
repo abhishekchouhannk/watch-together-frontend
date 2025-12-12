@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Plus } from "lucide-react";
 import RoomCard from "@/components/dashboard/RoomCard";
 import CreateRoomModal from "@/components/dashboard/CreateRoomModal";
@@ -10,6 +10,7 @@ import { Room, RoomMode } from "@/components/dashboard/types/room";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import LogoutButton from "@/components/auth/LogoutButton";
 import { useTheme } from "@/hooks/useTheme"; // Import the new hook
+import { debounce } from "@/utils/debounce";
 // import HoverExpandCard from "@/components/dashboard/HoverExpandCard";
 
 const SERVER_URL =
@@ -19,26 +20,42 @@ export default function Dashboard() {
   const theme = useTheme(); // Get current theme
   const [myRooms, setMyRooms] = useState<Room[]>([]);
   const [publicRooms, setPublicRooms] = useState<Room[]>([]);
-  const [filteredRooms, setFilteredRooms] = useState<Room[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedMode, setSelectedMode] = useState<RoomMode | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"public" | "my">("public");
 
-  // ... (keep all your existing useEffect and function logic) ...
+  const filteredRooms = useMemo(() => {
+  const currentRooms = viewMode === "public" ? publicRooms : myRooms;
+  
+  if (!currentRooms || currentRooms.length === 0) {
+    return [];
+  }
+
+  let filtered = [...currentRooms];
+
+  if (selectedMode !== "all") {
+    filtered = filtered.filter((room) => room.mode === selectedMode);
+  }
+
+  if (searchQuery.trim()) {
+    const lowerQuery = searchQuery.toLowerCase();
+    filtered = filtered.filter(
+      (room) =>
+        room.roomName.toLowerCase().includes(lowerQuery) ||
+        room.description?.toLowerCase().includes(lowerQuery) ||
+        room.tags?.some((tag) => tag.toLowerCase().includes(lowerQuery))
+    );
+  }
+
+  return filtered;
+}, [publicRooms, myRooms, selectedMode, searchQuery, viewMode]);
 
   /** Fetch rooms on mount */
   useEffect(() => {
     fetchRooms();
   }, []);
-
-  /** Re-filter whenever data, mode, search query, or view changes */
-  useEffect(() => {
-    if (!isLoading) {
-      filterRooms(searchQuery, selectedMode);
-    }
-  }, [publicRooms, myRooms, selectedMode, searchQuery, viewMode, isLoading]);
 
   const fetchRooms = async () => {
     try {
@@ -59,23 +76,25 @@ export default function Dashboard() {
 
       setMyRooms(myRoomsData.rooms || []);
       setPublicRooms(publicRoomsData.rooms || []);
-      setFilteredRooms(
-        viewMode === "public"
-          ? publicRoomsData.rooms || []
-          : myRoomsData.rooms || []
-      );
     } catch (error) {
       console.error("Error fetching rooms:", error);
       setPublicRooms([]);
       setMyRooms([]);
-      setFilteredRooms([]);
     } finally {
       setIsLoading(false);
     }
   };
 
+    // Debounced search
+  const debouncedSearch = useCallback(
+    debounce((query: string) => {
+      setSearchQuery(query);
+    }, 300),
+    []
+  );
+
   const handleSearch = (query: string) => {
-    setSearchQuery(query);
+    debouncedSearch(query);
   };
 
   const handleModeFilter = (mode: RoomMode | "all") => {
@@ -84,11 +103,6 @@ export default function Dashboard() {
 
   const filterRooms = (query: string, mode: RoomMode | "all") => {
     const currentRooms = viewMode === "public" ? publicRooms : myRooms;
-
-    if (!currentRooms || currentRooms.length === 0) {
-      setFilteredRooms([]);
-      return;
-    }
 
     let filtered = [...currentRooms];
 
@@ -105,8 +119,6 @@ export default function Dashboard() {
           room.tags?.some((tag) => tag.toLowerCase().includes(lowerQuery))
       );
     }
-
-    setFilteredRooms(filtered);
   };
 
   const handleScrollBubble = (e: React.WheelEvent<HTMLDivElement>) => {
@@ -127,8 +139,10 @@ export default function Dashboard() {
     setSearchQuery("");
   };
 
+
+
   // Dynamic theme classes based on current theme
-  const getThemeClasses = () => {
+  const getThemeClasses = useMemo(() => {
     const baseClasses = {
       morning: {
         bg: "bg-gradient-to-b from-pink-100/50 to-rose-100/30",
@@ -194,9 +208,9 @@ export default function Dashboard() {
     };
 
     return baseClasses[theme.name as keyof typeof baseClasses];
-  };
+  }, [theme.name]);
 
-  const themeClasses = getThemeClasses();
+  const themeClasses = getThemeClasses;
 
   return (
     <ProtectedRoute>
@@ -284,6 +298,7 @@ export default function Dashboard() {
           {/* Scrollable container */}
           <div
             className={`overflow-y-auto max-h-[60vh] pr-2 scrollbar-thin ${themeClasses.scrollbar} rounded-lg`}
+            style={{ contain: 'layout style paint' }}
             onWheel={(e) => handleScrollBubble(e)}
           >
             {isLoading ? (
