@@ -10,7 +10,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // Call your Express `/auth/status` endpoint
+        // Call the Express `/auth/status` endpoint
         const response = await axios.get(
           `${process.env.NEXT_PUBLIC_AUTH_URL}/loggedIn`,
           { withCredentials: true }

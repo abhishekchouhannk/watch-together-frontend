@@ -251,7 +251,7 @@ export default function CreateRoomModal({ isOpen, onClose, onRoomCreated }: Crea
                 type="text"
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
                 className={`flex-1 px-4 py-2 ${themeClasses.inputBg} border ${themeClasses.inputBorder} rounded-lg
                          ${themeClasses.text} placeholder-gray-500 focus:outline-none ${themeClasses.inputFocus}`}
                 placeholder="Add tags"
