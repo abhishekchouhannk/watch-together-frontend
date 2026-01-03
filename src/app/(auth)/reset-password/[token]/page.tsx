@@ -52,7 +52,7 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen text-white">
-      <div className="bg-black/50 backdrop-blur-md p-8 rounded-2xl w-full max-w-md shadow-xl border border-white/10">
+      <div className="backdrop-blur-md p-8 rounded-2xl w-full max-w-md shadow-xl border border-white/10">
         <h1 className="text-2xl font-semibold text-center mb-6">Reset Password</h1>
 
         {message && (

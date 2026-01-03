@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useBackground } from "./BackgroundProvider";
-import { TIME_THEMES } from "../../theme/ThemeConstants";
+import { TIME_THEMES } from "../../theme/BackgroundConstants";
 import AnimatedSun from "./themeComponents/animatedSun";
 import TwinklingStars from "./themeComponents/twinklingStars";
 import PixelSun from "./themeComponents/pixelSun";

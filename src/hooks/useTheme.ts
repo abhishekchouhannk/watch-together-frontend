@@ -2,7 +2,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { TIME_THEMES, getTimeOfDay } from '@/theme/ThemeConstants';
+import { TIME_THEMES, getTimeOfDay } from '@/theme/BackgroundConstants';
 import { useBackground } from '@/components/landingPage/BackgroundProvider';
 
 export function useTheme() {
