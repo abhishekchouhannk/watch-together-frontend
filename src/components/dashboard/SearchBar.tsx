@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import { Search, X } from "lucide-react";
 import { debounce } from "@/utils/debounce";
-import { useTheme } from "@/hooks/useTheme";
+import { useCurrentTheme } from "@/hooks/useCurrentTheme";
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
@@ -14,7 +14,7 @@ export default function SearchBar({
   onSearch,
   placeholder = "Search rooms by name, description, or tags...",
 }: SearchBarProps) {
-  const theme = useTheme();
+  const theme = useCurrentTheme();
   const [searchValue, setSearchValue] = useState("");
   const [isFocused, setIsFocused] = useState(false);
 

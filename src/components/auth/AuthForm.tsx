@@ -151,7 +151,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSubmit, themeTextColor, initialMo
 
   return (
     <div
-      className="backdrop-blur-md bg-white/10 rounded-2xl shadow-2xl p-8 w-full max-w-md
+      className="bg-black/30 rounded-2xl shadow-2xl p-8 w-full max-w-md
                  border border-white/20 transition-all duration-500 transform
                  hover:shadow-3xl"
     >

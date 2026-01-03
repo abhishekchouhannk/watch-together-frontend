@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { BackgroundProvider } from "@/components/landingPage/BackgroundProvider";
-import SharedBackground from "@/components/landingPage/SharedBackground";
+import { BackgroundProvider } from "@/contexts/BackgroundContext";
+import SharedBackground from "@/components/sharedBackground/SharedBackground";
 import ThemeSelectorOverlay from "@/components/ThemeSelectorOverlay";
 
 import { headers } from "next/headers";

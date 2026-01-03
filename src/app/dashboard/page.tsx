@@ -9,7 +9,7 @@ import RoomFilters from "@/components/dashboard/RoomFilters";
 import { Room, RoomMode } from "@/components/dashboard/types/room";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import LogoutButton from "@/components/auth/LogoutButton";
-import { useTheme } from "@/hooks/useTheme";
+import { useCurrentTheme } from "@/hooks/useCurrentTheme";
 
 const SERVER_URL =
   process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
@@ -56,7 +56,7 @@ const RoomGrid = memo(function RoomGrid({
 });
 
 export default function Dashboard() {
-  const theme = useTheme();
+  const theme = useCurrentTheme();
   const [myRooms, setMyRooms] = useState<Room[]>([]);
   const [publicRooms, setPublicRooms] = useState<Room[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);

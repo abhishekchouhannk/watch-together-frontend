@@ -5,7 +5,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation";
 import { Play, ArrowRight, Users, Lock, Unlock, Crown } from "lucide-react";
 import { Room } from "./types/room";
-import { useTheme } from "@/hooks/useTheme";
+import { useCurrentTheme } from "@/hooks/useCurrentTheme";
 
 /**
  * Lightweight, optimized RoomCard
@@ -34,7 +34,7 @@ function prefersDesktopPointer() {
 }
 
 function RoomCardInner({ room, isOwned = false }: RoomCardProps) {
-  const theme = useTheme();
+  const theme = useCurrentTheme();
   const router = useRouter();
 
   // Card local UI state

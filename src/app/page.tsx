@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { useBackground } from "@/components/landingPage/BackgroundProvider";
+import { useBackground } from "@/hooks/useBackground";
 import { TIME_THEMES } from "@/theme/BackgroundConstants";
 
 const HomePage: React.FC = () => {

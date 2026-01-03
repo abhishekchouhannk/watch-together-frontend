@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import ThemeSelector from "@/components/landingPage/themeComponents/ThemeSelector";
-import { useBackground } from "@/components/landingPage/BackgroundProvider";
+import ThemeSelector from "@/components/sharedBackground/themeComponents/ThemeSelector";
+import { useBackground } from "@/hooks/useBackground";
 import { usePathname } from "next/navigation";
 
 /**
@@ -15,11 +15,6 @@ export default function ThemeSelectorOverlay() {
   if (process.env.NODE_ENV !== "development") return null;
 
   const pathname = usePathname();
-
-  // // Only show on "/" or "/auth"
-  // if (pathname !== "/" && pathname !== "/auth") {
-  //   return null;
-  // }
 
   return (
     <div

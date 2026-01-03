@@ -4,7 +4,7 @@ import React, { useEffect, useMemo } from "react";
 import AuthForm from "@/components/auth/AuthForm";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { useBackground } from "@/components/landingPage/BackgroundProvider";
+import { useBackground } from "@/hooks/useBackground";
 import { TIME_THEMES } from "@/theme/BackgroundConstants";
 import axios from "axios";
 

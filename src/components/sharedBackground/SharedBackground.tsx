@@ -1,8 +1,10 @@
 "use client";
 
 import React from "react";
-import { useBackground } from "./BackgroundProvider";
-import { TIME_THEMES } from "../../theme/BackgroundConstants";
+import { useBackground } from "@/hooks/useBackground";
+import { TIME_THEMES } from "@/theme/BackgroundConstants";
+
+// Import time-specific animated components
 import AnimatedSun from "./themeComponents/animatedSun";
 import TwinklingStars from "./themeComponents/twinklingStars";
 import PixelSun from "./themeComponents/pixelSun";
@@ -156,11 +158,6 @@ const SharedBackground: React.FC = () => {
         zIndex={40}
         scrollSpeed={40}
       />
-
-      {/* Optional: Time indicator for testing
-      {process.env.NODE_ENV === 'development' && (
-        <DevTimeSelector currentTime={new Date()} onThemeChange={setSelectedTheme} />
-      )} */}
     </div>
   );
 };

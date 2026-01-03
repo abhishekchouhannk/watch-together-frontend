@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { getTimeOfDay } from "../../theme/BackgroundConstants";
+import { getTimeOfDay } from "../theme/BackgroundConstants";
 
 interface BackgroundContextType {
   animationStarted: boolean;
@@ -12,32 +12,21 @@ interface BackgroundContextType {
   >;
 }
 
-const BackgroundContext = createContext<BackgroundContextType | undefined>(
+export const BackgroundContext = createContext<BackgroundContextType | undefined>(
   undefined
 );
-
-export const useBackground = () => {
-  const context = useContext(BackgroundContext);
-  if (!context) {
-    throw new Error("useBackground must be used within BackgroundProvider");
-  }
-  return context;
-};
 
 export const BackgroundProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [animationStarted, setAnimationStarted] = useState(false);
-  const [blimpTrail, setBlimpTrail] = useState<Array<{ x: number; y: number }>>(
-    []
-  );
+  const [blimpTrail, setBlimpTrail] = useState<Array<{ x: number; y: number }>>( [] );
   const [selectedTheme, setSelectedTheme] = useState<
     "morning" | "afternoon" | "evening" | "night"
   >("night"); // stable default
 
   useEffect(() => {
-    const hour = new Date().getHours();
-    setSelectedTheme(getTimeOfDay(hour));
+    setSelectedTheme(getTimeOfDay());
   }, []);
 
   // Start animations only once on mount
