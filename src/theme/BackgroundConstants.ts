@@ -1,21 +1,24 @@
 // Theme configuration for different times of day
+
+function makeClouds(time: string, layer: string) {
+  const basePath = `/assets/${time}/${layer}/`;
+  return {
+    left: `${basePath}left.png`,
+    right: `${basePath}right.png`,
+    full: `${basePath}full.png`,
+  };
+}
+
+
 const TIME_THEMES = {
   morning: {
     name: "morning",
     motto: "Start your day watching together, anywhere.",
     bgColor: "bg-gradient-to-b from-pink-200 via-rose-100 to-blue-200",
     skyImage: "/assets/morning/sky.png",
-    farClouds: {
-      left: "/assets/morning/farLayer/left.png",
-      right: "/assets/morning/farLayer/right.png",
-      full: "/assets/morning/farLayer/full.png",
-    },
     elementImage: "/assets/morning/element.png",
-    nearClouds: {
-      left: "/assets/morning/nearLayer/left.png",
-      right: "/assets/morning/nearLayer/right.png",
-      full: "/assets/morning/nearLayer/full.png",
-    },
+    farClouds: makeClouds("morning", "farLayer"),
+    nearClouds: makeClouds("morning", "nearLayer"),
     textColor: "text-rose-900",
     buttonPrimary: "bg-rose-500 hover:bg-rose-600 text-white",
     buttonSecondary: "bg-rose-100/80 hover:bg-rose-200/90 text-rose-900",
@@ -25,17 +28,9 @@ const TIME_THEMES = {
     motto: "Take a break and watch together, anywhere.",
     bgColor: "bg-sky-300",
     skyImage: "/assets/afternoon/sky.png",
-    farClouds: {
-      left: "/assets/afternoon/farLayer/left.png",
-      right: "/assets/afternoon/farLayer/right.png",
-      full: "/assets/afternoon/farLayer/full.png",
-    },
     elementImage: null, // Uses animated blimp instead
-    nearClouds: {
-      left: "/assets/afternoon/nearLayer/left.png",
-      right: "/assets/afternoon/nearLayer/right.png",
-      full: "/assets/afternoon/nearLayer/full.png",
-    },
+    farClouds: makeClouds("afternoon", "farLayer"),
+    nearClouds: makeClouds("afternoon", "nearLayer"),
     textColor: "text-sky-900",
     buttonPrimary: "bg-yellow-400 hover:bg-yellow-500 text-sky-900",
     buttonSecondary:
@@ -46,17 +41,9 @@ const TIME_THEMES = {
     motto: "Unwind and watch together, anywhere.",
     bgColor: "bg-gradient-to-b from-purple-400 via-pink-300 to-orange-300",
     skyImage: "/assets/evening/sky.png",
-    farClouds: {
-      left: "/assets/evening/farLayer/left.png",
-      right: "/assets/evening/farLayer/right.png",
-      full: "/assets/evening/farLayer/full.png",
-    },
     elementImage: "/assets/evening/element.png", // Could be flying birds, etc.
-    nearClouds: {
-      left: "/assets/evening/nearLayer/left.png",
-      right: "/assets/evening/nearLayer/right.png",
-      full: "/assets/evening/nearLayer/full.png",
-    },
+    farClouds: makeClouds("evening", "farLayer"),
+    nearClouds: makeClouds("evening", "nearLayer"),
     textColor: "text-pink-500",
     buttonPrimary: "bg-purple-600 hover:bg-purple-700 text-white",
     buttonSecondary: "bg-purple-100/80 hover:bg-purple-200/90 text-purple-900",
@@ -66,17 +53,9 @@ const TIME_THEMES = {
     motto: "Movie nights made simple — together, anywhere.",
     bgColor: "bg-gradient-to-b from-indigo-900 to-blue-900",
     skyImage: "/assets/night/sky.png",
-    farClouds: {
-      left: "/assets/night/farLayer/left.png",
-      right: "/assets/night/farLayer/right.png",
-      full: "/assets/night/farLayer/full.png",
-    },
     elementImage: null, // Could be stars, moon, etc.
-    nearClouds: {
-      left: "/assets/night/nearLayer/left.png",
-      right: "/assets/night/nearLayer/right.png",
-      full: "/assets/night/nearLayer/full.png",
-    },
+    farClouds: makeClouds("night", "farLayer"),
+    nearClouds: makeClouds("night", "nearLayer"),
     textColor: "text-white",
     buttonPrimary: "bg-indigo-500 hover:bg-indigo-600 text-white",
     buttonSecondary:
