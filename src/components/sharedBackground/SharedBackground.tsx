@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useBackground } from "@/hooks/useBackground";
-import { TIME_THEMES } from "@/theme/BackgroundConstants";
+import { TIME_THEMES } from "@/theme/Background";
 
 // Import time-specific animated components
 import AnimatedSun from "./themeComponents/animatedSun";

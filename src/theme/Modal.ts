@@ -1,6 +1,5 @@
 // ModalConstants.ts
-
-import { TIME_THEMES } from "./BackgroundConstants";
+import { TIME_THEMES } from "./Background";
 
 // Theme-specific classes
 export const getModalTheme = (theme: typeof TIME_THEMES[keyof typeof TIME_THEMES]) => {

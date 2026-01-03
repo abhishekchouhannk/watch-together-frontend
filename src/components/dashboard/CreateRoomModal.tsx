@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { X, Lock, Unlock } from 'lucide-react';
 import { RoomMode } from './types/room';
 import { useCurrentTheme } from '@/hooks/useCurrentTheme';
-import { getModalTheme } from '@/theme/ModalConstants';
+import { getModalTheme } from '@/theme/Modal';
 
 interface CreateRoomModalProps {
   isOpen: boolean;

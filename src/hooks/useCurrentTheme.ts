@@ -1,7 +1,7 @@
 // hooks/useCurrentTheme.ts
 'use client';
 
-import { TIME_THEMES } from '@/theme/BackgroundConstants';
+import { TIME_THEMES } from '@/theme/Background';
 import { useBackground } from '@/hooks/useBackground';
 
 // returns the current theme based on the selected theme in context
