@@ -1,9 +1,24 @@
 // components/dashboard/RoomCard.tsx
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useRouter } from "next/navigation";
-import { Play, ArrowRight, Users, Lock, Unlock, Crown, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Play,
+  ArrowRight,
+  Users,
+  Lock,
+  Unlock,
+  Crown,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { Room } from "./types/room";
 import { useCurrentTheme } from "@/hooks/useCurrentTheme";
 
@@ -49,7 +64,11 @@ function RoomCardInner({ room, isOwned = false }: RoomCardProps) {
 
     return {
       ...base,
-      ...(theme ? (theme.buttonPrimary ? { buttonPrimary: theme.buttonPrimary } : {}) : {}),
+      ...(theme
+        ? theme.buttonPrimary
+          ? { buttonPrimary: theme.buttonPrimary }
+          : {}
+        : {}),
     };
   }, [theme]);
 
@@ -94,7 +113,10 @@ function RoomCardInner({ room, isOwned = false }: RoomCardProps) {
 
   const handleEnter = useCallback(() => setIsHovered(true), []);
   const handleLeave = useCallback(() => setIsHovered(false), []);
-  const handleToggleDetails = useCallback(() => setIsDetailsMode((s) => !s), []);
+  const handleToggleDetails = useCallback(
+    () => setIsDetailsMode((s) => !s),
+    [],
+  );
 
   const handleJoin = useCallback(() => {
     router.push(`/room/${room.roomId}`);
@@ -106,7 +128,9 @@ function RoomCardInner({ room, isOwned = false }: RoomCardProps) {
     if (isPreviewPlaying) {
       v.pause();
       setIsPreviewPlaying(false);
-      try { v.currentTime = 0; } catch {}
+      try {
+        v.currentTime = 0;
+      } catch {}
     } else {
       v.play().catch(() => {});
       setIsPreviewPlaying(true);
@@ -133,7 +157,9 @@ function RoomCardInner({ room, isOwned = false }: RoomCardProps) {
       {!isDetailsMode ? (
         <>
           {/* Thumbnail / Video header — fixed height, no shrink */}
-          <div className={`relative h-36 flex-shrink-0 ${themeClasses.headerBg} w-full overflow-hidden`}>
+          <div
+            className={`relative h-36 flex-shrink-0 ${themeClasses.headerBg} w-full overflow-hidden`}
+          >
             {room.video?.url ? (
               <video
                 ref={videoRef}
@@ -147,10 +173,19 @@ function RoomCardInner({ room, isOwned = false }: RoomCardProps) {
             ) : (
               <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-gray-800/20">
                 {room.thumbnail ? (
-                  <img src={room.thumbnail} alt={room.roomName} className="w-full h-full object-cover" loading="lazy" />
+                  <img
+                    src={room.thumbnail}
+                    alt={room.roomName}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
                 ) : (
                   <div className="text-4xl">
-                    {room.mode === "gaming" ? "🎮" : room.mode === "study" ? "📚" : "🎬"}
+                    {room.mode === "gaming"
+                      ? "🎮"
+                      : room.mode === "study"
+                        ? "📚"
+                        : "🎬"}
                   </div>
                 )}
               </div>
@@ -158,7 +193,9 @@ function RoomCardInner({ room, isOwned = false }: RoomCardProps) {
 
             {/* Mode badge + LIVE indicator — constrained to not overflow */}
             <div className="absolute top-2 left-2 flex gap-1.5 z-10 max-w-[calc(100%-2rem)] overflow-hidden">
-              <span className={`px-2 py-0.5 text-xs rounded-full border whitespace-nowrap flex-shrink-0 ${modeBadge}`}>
+              <span
+                className={`px-2 py-0.5 text-xs rounded-full border whitespace-nowrap flex-shrink-0 ${modeBadge}`}
+              >
                 {room.mode}
               </span>
               {room.video?.isPlaying && (
@@ -180,7 +217,9 @@ function RoomCardInner({ room, isOwned = false }: RoomCardProps) {
 
             {/* Admin badge — pinned bottom-right, horizontal layout */}
             {isOwned && (
-              <div className={`absolute bottom-2 right-2 z-10 ${themeClasses.adminBadge} px-2 py-0.5 rounded-full text-xs flex items-center gap-1 whitespace-nowrap`}>
+              <div
+                className={`absolute bottom-2 right-2 z-10 ${themeClasses.adminBadge} px-2 py-0.5 rounded-full text-xs flex items-center gap-1 whitespace-nowrap`}
+              >
                 <Crown size={12} />
                 <span>Admin</span>
               </div>
@@ -190,12 +229,16 @@ function RoomCardInner({ room, isOwned = false }: RoomCardProps) {
           {/* Content body — grows to fill remaining card height */}
           <div className="p-4 flex flex-col flex-1 min-w-0">
             {/* Title */}
-            <h3 className={`text-lg font-semibold truncate ${themeClasses.text}`}>
+            <h3
+              className={`text-lg font-semibold truncate ${themeClasses.text}`}
+            >
               {room.roomName}
             </h3>
 
             {/* Description — exactly 2 lines, then clips */}
-            <p className={`text-sm mt-1 line-clamp-2 ${themeClasses.textMuted}`}>
+            <p
+              className={`text-sm mt-1 line-clamp-2 ${themeClasses.textMuted}`}
+            >
               {room.description || "No description"}
             </p>
 
@@ -209,14 +252,19 @@ function RoomCardInner({ room, isOwned = false }: RoomCardProps) {
                 {/* Participant count — never shrinks */}
                 <div className="flex items-center gap-1 text-xs text-gray-300 flex-shrink-0 whitespace-nowrap">
                   <Users size={14} />
-                  <span>{room.participants.length}/{room.maxParticipants}</span>
+                  <span>
+                    {room.participants.length}/{room.maxParticipants}
+                  </span>
                 </div>
 
                 {/* Tags — scroll horizontally if too many, clip at container edge */}
-                <div className="flex gap-1 overflow-x-auto flex-1" style={{ scrollbarWidth: "none" }}>
-                  {(room.tags || []).slice(0, 4).map((t) => (
+                <div
+                  className="flex gap-1 overflow-x-auto flex-1"
+                  style={{ scrollbarWidth: "none" }}
+                >
+                  {(room.tags || []).slice(0, 4).map((t, i) => (
                     <span
-                      key={t}
+                      key={`${room.roomId}-tag-${i}`}
                       className="text-xs px-2 py-0.5 rounded bg-gray-700/30 whitespace-nowrap flex-shrink-0 text-gray-300"
                     >
                       {`#${t}`}
@@ -261,7 +309,9 @@ function RoomCardInner({ room, isOwned = false }: RoomCardProps) {
         /* DETAILS VIEW — replaces card content in-place */
         <div className="flex flex-col flex-1 min-w-0">
           {/* Details header: keep the thumbnail small but present */}
-          <div className={`relative h-24 flex-shrink-0 ${themeClasses.headerBg} w-full overflow-hidden`}>
+          <div
+            className={`relative h-24 flex-shrink-0 ${themeClasses.headerBg} w-full overflow-hidden`}
+          >
             {room.video?.url ? (
               <video
                 src={room.video.url}
@@ -281,7 +331,11 @@ function RoomCardInner({ room, isOwned = false }: RoomCardProps) {
             ) : (
               <div className="absolute inset-0 flex items-center justify-center bg-gray-800/20">
                 <div className="text-3xl opacity-60">
-                  {room.mode === "gaming" ? "🎮" : room.mode === "study" ? "📚" : "🎬"}
+                  {room.mode === "gaming"
+                    ? "🎮"
+                    : room.mode === "study"
+                      ? "📚"
+                      : "🎬"}
                 </div>
               </div>
             )}
@@ -291,7 +345,9 @@ function RoomCardInner({ room, isOwned = false }: RoomCardProps) {
 
             {/* Mode badge positioned at bottom-left of this header */}
             <div className="absolute bottom-2 left-3 z-10">
-              <span className={`px-2 py-0.5 text-xs rounded-full border ${modeBadge}`}>
+              <span
+                className={`px-2 py-0.5 text-xs rounded-full border ${modeBadge}`}
+              >
                 {room.mode}
               </span>
             </div>
@@ -309,7 +365,9 @@ function RoomCardInner({ room, isOwned = false }: RoomCardProps) {
           {/* Details body */}
           <div className="p-4 flex flex-col gap-3 min-w-0">
             {/* Title */}
-            <h3 className={`text-lg font-semibold truncate ${themeClasses.text}`}>
+            <h3
+              className={`text-lg font-semibold truncate ${themeClasses.text}`}
+            >
               {room.roomName}
             </h3>
 
@@ -322,7 +380,9 @@ function RoomCardInner({ room, isOwned = false }: RoomCardProps) {
             <div className="flex items-center gap-4 text-sm">
               <div className="flex items-center gap-1.5 text-gray-300">
                 <Users size={15} />
-                <span>{room.participants.length} / {room.maxParticipants} members</span>
+                <span>
+                  {room.participants.length} / {room.maxParticipants} members
+                </span>
               </div>
               <div className="flex items-center gap-1 text-gray-400 text-xs">
                 {room.isPublic ? (
@@ -338,7 +398,9 @@ function RoomCardInner({ room, isOwned = false }: RoomCardProps) {
                 )}
               </div>
               {isOwned && (
-                <div className={`flex items-center gap-1 text-xs ${themeClasses.adminBadge} px-2 py-0.5 rounded-full`}>
+                <div
+                  className={`flex items-center gap-1 text-xs ${themeClasses.adminBadge} px-2 py-0.5 rounded-full`}
+                >
                   <Crown size={12} />
                   <span>Admin</span>
                 </div>
@@ -348,9 +410,9 @@ function RoomCardInner({ room, isOwned = false }: RoomCardProps) {
             {/* Tags — wrapping grid so they never overflow */}
             {room.tags && room.tags.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
-                {room.tags.map((t) => (
+                {room.tags.map((t, i) => (
                   <span
-                    key={t}
+                    key={`${room.roomId}-detail-tag-${i}`}
                     className="text-xs px-2.5 py-0.5 rounded-full bg-gray-700/30 text-gray-300"
                   >
                     {`#${t}`}
