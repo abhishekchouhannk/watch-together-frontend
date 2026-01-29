@@ -3,20 +3,9 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Play, ArrowRight, Users, Lock, Unlock, Crown } from "lucide-react";
+import { Play, ArrowRight, Users, Lock, Unlock, Crown, ChevronDown, ChevronUp } from "lucide-react";
 import { Room } from "./types/room";
 import { useCurrentTheme } from "@/hooks/useCurrentTheme";
-
-/**
- * Lightweight, optimized RoomCard
- *
- * - No heavy expansion logic, no portal
- * - "View Details" toggles an in-place details view
- * - Video preview is mounted in-card; autoplay on hover ONLY when likely allowed (desktop),
- *   otherwise user must press "Preview" (controlled by the 'maybe' policy)
- * - Minimal effects and no global scroll/mouse listeners
- * - Exported as React.memo for stability
- */
 
 interface RoomCardProps {
   room: Room;
@@ -24,7 +13,6 @@ interface RoomCardProps {
 }
 
 function prefersDesktopPointer() {
-  // best-effort check for pointer/hover capability (desktop-like)
   if (typeof window === "undefined" || !window.matchMedia) return false;
   try {
     return window.matchMedia("(hover: hover) and (pointer: fine)").matches;
@@ -37,7 +25,6 @@ function RoomCardInner({ room, isOwned = false }: RoomCardProps) {
   const theme = useCurrentTheme();
   const router = useRouter();
 
-  // Card local UI state
   const [isDetailsMode, setIsDetailsMode] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
@@ -46,12 +33,8 @@ function RoomCardInner({ room, isOwned = false }: RoomCardProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const hoverPlayTimeout = useRef<number | null>(null);
 
-  // Decide autoplay behavior for the "maybe" policy:
-  // - autoplay on hover for desktop-like devices (pointer: fine & hover: hover)
-  // - on mobile/touch, require explicit Preview button
   const canAutoplayOnHover = useMemo(() => prefersDesktopPointer(), []);
 
-  // Theme classes memoized (small mapping)
   const themeClasses = useMemo(() => {
     const base = {
       cardBg: "bg-white/6 backdrop-blur-sm",
@@ -64,14 +47,12 @@ function RoomCardInner({ room, isOwned = false }: RoomCardProps) {
       adminBadge: "bg-yellow-400/20 text-yellow-300",
     };
 
-    // merge with useTheme output if needed (your useTheme provides colors)
     return {
       ...base,
       ...(theme ? (theme.buttonPrimary ? { buttonPrimary: theme.buttonPrimary } : {}) : {}),
     };
   }, [theme]);
 
-  // Video: attach simple 'canplay' listener
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -83,17 +64,13 @@ function RoomCardInner({ room, isOwned = false }: RoomCardProps) {
     };
   }, []);
 
-  // Play/pause preview on hover (only if autoplay allowed)
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
     if (isHovered && canAutoplayOnHover && room.video?.url) {
-      // small delay so micro-hovers don't trigger heavy work
       hoverPlayTimeout.current = window.setTimeout(() => {
-        video.play().catch(() => {
-          /* autoplay blocked — ignore */
-        });
+        video.play().catch(() => {});
         setIsPreviewPlaying(true);
       }, 180);
     } else {
@@ -104,12 +81,9 @@ function RoomCardInner({ room, isOwned = false }: RoomCardProps) {
       video.pause();
       try {
         video.currentTime = 0;
-      } catch {
-        /* ignore */
-      }
+      } catch {}
       setIsPreviewPlaying(false);
     }
-    // cleanup on unmount
     return () => {
       if (hoverPlayTimeout.current) {
         clearTimeout(hoverPlayTimeout.current);
@@ -118,17 +92,9 @@ function RoomCardInner({ room, isOwned = false }: RoomCardProps) {
     };
   }, [isHovered, canAutoplayOnHover, room.video?.url]);
 
-  const handleEnter = useCallback(() => {
-    setIsHovered(true);
-  }, []);
-
-  const handleLeave = useCallback(() => {
-    setIsHovered(false);
-  }, []);
-
-  const handleToggleDetails = useCallback(() => {
-    setIsDetailsMode((s) => !s);
-  }, []);
+  const handleEnter = useCallback(() => setIsHovered(true), []);
+  const handleLeave = useCallback(() => setIsHovered(false), []);
+  const handleToggleDetails = useCallback(() => setIsDetailsMode((s) => !s), []);
 
   const handleJoin = useCallback(() => {
     router.push(`/room/${room.roomId}`);
@@ -137,7 +103,6 @@ function RoomCardInner({ room, isOwned = false }: RoomCardProps) {
   const handlePreviewClick = useCallback(() => {
     const v = videoRef.current;
     if (!v) return;
-    // toggle play/pause
     if (isPreviewPlaying) {
       v.pause();
       setIsPreviewPlaying(false);
@@ -148,7 +113,6 @@ function RoomCardInner({ room, isOwned = false }: RoomCardProps) {
     }
   }, [isPreviewPlaying]);
 
-  // small helpers
   const modeBadge = useMemo(() => {
     const colors: Record<string, string> = {
       casual: "bg-green-600/20 text-green-300 border-green-600/40",
@@ -161,18 +125,16 @@ function RoomCardInner({ room, isOwned = false }: RoomCardProps) {
 
   return (
     <div
-      className={`rounded-xl overflow-hidden border ${themeClasses.cardBorder} ${themeClasses.cardBg} shadow-sm`}
+      className={`rounded-xl overflow-hidden border ${themeClasses.cardBorder} ${themeClasses.cardBg} shadow-sm flex flex-col`}
+      style={{ minHeight: isDetailsMode ? "auto" : "280px" }}
       onMouseEnter={handleEnter}
       onMouseLeave={handleLeave}
-      // keep pointer events normal; virtualization/grid will handle layout
     >
-      {/* CARD VIEW */}
       {!isDetailsMode ? (
         <>
-          {/* header area: thumbnail / video */}
-          <div className={`relative h-36 ${themeClasses.headerBg} w-full`}>
+          {/* Thumbnail / Video header — fixed height, no shrink */}
+          <div className={`relative h-36 flex-shrink-0 ${themeClasses.headerBg} w-full overflow-hidden`}>
             {room.video?.url ? (
-              // Video is always in the DOM for preview, but muted and small
               <video
                 ref={videoRef}
                 src={room.video.url}
@@ -183,132 +145,229 @@ function RoomCardInner({ room, isOwned = false }: RoomCardProps) {
                 preload="metadata"
               />
             ) : (
-              // Thumbnail fallback
               <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-gray-800/20">
                 {room.thumbnail ? (
                   <img src={room.thumbnail} alt={room.roomName} className="w-full h-full object-cover" loading="lazy" />
                 ) : (
-                  <div className="text-4xl">{room.mode === "gaming" ? "🎮" : room.mode === "study" ? "📚" : "🎬"}</div>
+                  <div className="text-4xl">
+                    {room.mode === "gaming" ? "🎮" : room.mode === "study" ? "📚" : "🎬"}
+                  </div>
                 )}
               </div>
             )}
 
-            {/* overlays: mode, live, privacy, owner */}
-            <div className="absolute top-2 left-2 flex gap-2 z-10">
-              <span className={`px-2 py-1 text-xs rounded-full border ${modeBadge}`}>{room.mode}</span>
+            {/* Mode badge + LIVE indicator — constrained to not overflow */}
+            <div className="absolute top-2 left-2 flex gap-1.5 z-10 max-w-[calc(100%-2rem)] overflow-hidden">
+              <span className={`px-2 py-0.5 text-xs rounded-full border whitespace-nowrap flex-shrink-0 ${modeBadge}`}>
+                {room.mode}
+              </span>
               {room.video?.isPlaying && (
-                <span className="px-2 py-1 text-xs bg-red-600/80 text-white rounded-full flex items-center gap-1">
+                <span className="px-2 py-0.5 text-xs bg-red-600/80 text-white rounded-full flex items-center gap-1 whitespace-nowrap flex-shrink-0">
                   <Play size={10} />
                   LIVE
                 </span>
               )}
             </div>
 
+            {/* Privacy icon — pinned top-right */}
             <div className="absolute top-2 right-2 z-10">
-              {room.isPublic ? <Unlock size={16} className="text-white/80" /> : <Lock size={16} className="text-white/80" />}
+              {room.isPublic ? (
+                <Unlock size={16} className="text-white/80" />
+              ) : (
+                <Lock size={16} className="text-white/80" />
+              )}
             </div>
 
+            {/* Admin badge — pinned bottom-right, horizontal layout */}
             {isOwned && (
-              <div className={`absolute bottom-2 right-2 z-10 ${themeClasses.adminBadge} px-2 py-1 rounded-full text-xs`}>
+              <div className={`absolute bottom-2 right-2 z-10 ${themeClasses.adminBadge} px-2 py-0.5 rounded-full text-xs flex items-center gap-1 whitespace-nowrap`}>
                 <Crown size={12} />
-                <span className="ml-1">Admin</span>
+                <span>Admin</span>
               </div>
             )}
           </div>
 
-          {/* content */}
-          <div className="p-4">
-            <h3 className="text-lg font-semibold mb-1 truncate">{room.roomName}</h3>
-            <p className={`text-sm mb-3 line-clamp-2 ${themeClasses.textMuted}`}>{room.description || "No description"}</p>
+          {/* Content body — grows to fill remaining card height */}
+          <div className="p-4 flex flex-col flex-1 min-w-0">
+            {/* Title */}
+            <h3 className={`text-lg font-semibold truncate ${themeClasses.text}`}>
+              {room.roomName}
+            </h3>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3 text-sm">
-                <div className="flex items-center gap-1 text-xs text-gray-300">
-                  <Users size={16} />
+            {/* Description — exactly 2 lines, then clips */}
+            <p className={`text-sm mt-1 line-clamp-2 ${themeClasses.textMuted}`}>
+              {room.description || "No description"}
+            </p>
+
+            {/* Spacer: pushes the bottom row to the card's base */}
+            <div className="flex-1" />
+
+            {/* Bottom row: participants + tags on left, actions on right */}
+            <div className="flex items-center justify-between gap-2 mt-3">
+              {/* Left group: participants count, then scrollable tag strip */}
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                {/* Participant count — never shrinks */}
+                <div className="flex items-center gap-1 text-xs text-gray-300 flex-shrink-0 whitespace-nowrap">
+                  <Users size={14} />
                   <span>{room.participants.length}/{room.maxParticipants}</span>
                 </div>
-                {/* tags preview (up to 3) */}
-                <div className="flex gap-1">
-                  {(room.tags || []).slice(0, 3).map((t) => (
-                    <span key={t} className="text-xs px-2 py-0.5 rounded bg-gray-700/30">{`#${t}`}</span>
+
+                {/* Tags — scroll horizontally if too many, clip at container edge */}
+                <div className="flex gap-1 overflow-x-auto flex-1" style={{ scrollbarWidth: "none" }}>
+                  {(room.tags || []).slice(0, 4).map((t) => (
+                    <span
+                      key={t}
+                      className="text-xs px-2 py-0.5 rounded bg-gray-700/30 whitespace-nowrap flex-shrink-0 text-gray-300"
+                    >
+                      {`#${t}`}
+                    </span>
                   ))}
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                {/* Preview button (for mobile/when autoplay is not allowed) */}
+              {/* Right group: action buttons — never shrink, never wrap */}
+              <div className="flex items-center gap-1.5 flex-shrink-0">
                 {!canAutoplayOnHover && room.video?.url && (
                   <button
                     onClick={handlePreviewClick}
-                    className="px-2 py-1 rounded border text-xs"
+                    className="p-1.5 rounded border border-gray-600/40 hover:bg-gray-700/20 transition-colors"
                     aria-pressed={isPreviewPlaying}
                     title="Preview"
                   >
-                    <Play size={14} />
+                    <Play size={14} className="text-gray-300" />
                   </button>
                 )}
 
-                <button onClick={handleJoin} title="Join" className="p-2 rounded hover:bg-gray-700/10">
-                  <ArrowRight size={20} />
+                <button
+                  onClick={handleJoin}
+                  title="Join Room"
+                  className="p-1.5 rounded border border-gray-600/40 hover:bg-gray-700/20 transition-colors"
+                >
+                  <ArrowRight size={16} className="text-gray-300" />
                 </button>
 
-                <button onClick={handleToggleDetails} className="px-3 py-1 rounded text-sm border">
-                  Details
+                <button
+                  onClick={handleToggleDetails}
+                  className="p-1.5 rounded border border-gray-600/40 hover:bg-gray-700/20 transition-colors"
+                  title="More details"
+                >
+                  <ChevronDown size={16} className="text-gray-300" />
                 </button>
               </div>
             </div>
           </div>
         </>
       ) : (
-        /* DETAILS VIEW (in-place replacement) */
-        <div className="p-4">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-semibold mb-1">{room.roomName}</h3>
-              <p className={`text-sm mb-3 ${themeClasses.textMuted}`}>{room.description || "No description"}</p>
-
-              <div className="flex items-center gap-2 mb-3 text-sm">
-                <div className="flex items-center gap-1">
-                  <Users size={16} />
-                  <span>{room.participants.length}/{room.maxParticipants}</span>
-                </div>
-                <div className="flex gap-1">
-                  {(room.tags || []).map((t) => (
-                    <span key={t} className="text-xs px-2 py-0.5 rounded bg-gray-700/30">{`#${t}`}</span>
-                  ))}
+        /* DETAILS VIEW — replaces card content in-place */
+        <div className="flex flex-col flex-1 min-w-0">
+          {/* Details header: keep the thumbnail small but present */}
+          <div className={`relative h-24 flex-shrink-0 ${themeClasses.headerBg} w-full overflow-hidden`}>
+            {room.video?.url ? (
+              <video
+                src={room.video.url}
+                className="absolute inset-0 w-full h-full object-cover opacity-60"
+                muted
+                loop
+                playsInline
+                controls={false}
+                preload="metadata"
+              />
+            ) : room.thumbnail ? (
+              <img
+                src={room.thumbnail}
+                alt={room.roomName}
+                className="absolute inset-0 w-full h-full object-cover opacity-60"
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-800/20">
+                <div className="text-3xl opacity-60">
+                  {room.mode === "gaming" ? "🎮" : room.mode === "study" ? "📚" : "🎬"}
                 </div>
               </div>
+            )}
 
-              {/* action buttons */}
-              <div className="flex gap-2">
-                <button onClick={handleJoin} className={`${themeClasses.buttonPrimary} px-4 py-2 rounded`}>
-                  Join Room
-                </button>
-                <button onClick={handleToggleDetails} className="px-3 py-2 border rounded">
-                  Back
-                </button>
-              </div>
+            {/* Overlay gradient so text below is readable */}
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/50" />
+
+            {/* Mode badge positioned at bottom-left of this header */}
+            <div className="absolute bottom-2 left-3 z-10">
+              <span className={`px-2 py-0.5 text-xs rounded-full border ${modeBadge}`}>
+                {room.mode}
+              </span>
             </div>
 
-            {/* right column: larger preview area */}
-            <div className="w-40 flex-shrink-0">
-              {room.video?.url ? (
-                <div className="w-full h-24 bg-black/40 overflow-hidden rounded">
-                  <video
-                    src={room.video.url}
-                    className="w-full h-full object-cover"
-                    muted
-                    loop
-                    playsInline
-                    controls={false}
-                    preload="metadata"
-                  />
-                </div>
-              ) : (
-                <div className="w-full h-24 bg-gray-800/20 rounded flex items-center justify-center">
-                  {room.thumbnail ? <img src={room.thumbnail} alt={room.roomName} className="w-full h-full object-cover" /> : <div className="text-2xl">🎬</div>}
+            {/* Close/back chevron at top-right */}
+            <button
+              onClick={handleToggleDetails}
+              className="absolute top-2 right-2 z-10 p-1 rounded hover:bg-gray-700/30 transition-colors"
+              title="Close details"
+            >
+              <ChevronUp size={16} className="text-white/80" />
+            </button>
+          </div>
+
+          {/* Details body */}
+          <div className="p-4 flex flex-col gap-3 min-w-0">
+            {/* Title */}
+            <h3 className={`text-lg font-semibold truncate ${themeClasses.text}`}>
+              {room.roomName}
+            </h3>
+
+            {/* Description — no line-clamp here, show full text */}
+            <p className={`text-sm leading-relaxed ${themeClasses.textMuted}`}>
+              {room.description || "No description"}
+            </p>
+
+            {/* Meta row: participants + privacy */}
+            <div className="flex items-center gap-4 text-sm">
+              <div className="flex items-center gap-1.5 text-gray-300">
+                <Users size={15} />
+                <span>{room.participants.length} / {room.maxParticipants} members</span>
+              </div>
+              <div className="flex items-center gap-1 text-gray-400 text-xs">
+                {room.isPublic ? (
+                  <>
+                    <Unlock size={13} />
+                    <span>Public</span>
+                  </>
+                ) : (
+                  <>
+                    <Lock size={13} />
+                    <span>Private</span>
+                  </>
+                )}
+              </div>
+              {isOwned && (
+                <div className={`flex items-center gap-1 text-xs ${themeClasses.adminBadge} px-2 py-0.5 rounded-full`}>
+                  <Crown size={12} />
+                  <span>Admin</span>
                 </div>
               )}
+            </div>
+
+            {/* Tags — wrapping grid so they never overflow */}
+            {room.tags && room.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {room.tags.map((t) => (
+                  <span
+                    key={t}
+                    className="text-xs px-2.5 py-0.5 rounded-full bg-gray-700/30 text-gray-300"
+                  >
+                    {`#${t}`}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Action: Join button — full width at the bottom */}
+            <div className="mt-auto pt-2">
+              <button
+                onClick={handleJoin}
+                className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${themeClasses.buttonPrimary}`}
+              >
+                <ArrowRight size={16} />
+                Join Room
+              </button>
             </div>
           </div>
         </div>
@@ -317,5 +376,4 @@ function RoomCardInner({ room, isOwned = false }: RoomCardProps) {
   );
 }
 
-// memoize export - prevents parent-caused re-renders when props are referentially equal
 export default React.memo(RoomCardInner);
